@@ -29,7 +29,7 @@ async def run_stream(ws, call, lock, record):
     async with lock:
         if call.closed:
             return
-        call.capture = BoundedWindowQueue(call.cfg.stream_queue_windows)
+        call.capture = BoundedWindowQueue(getattr(call.cfg, "stream_queue_windows", 1))
     wake = asyncio.Event()
     sending = asyncio.Lock()
     stopping = False

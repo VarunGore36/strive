@@ -20,6 +20,7 @@ from .engine import Call
 from .features import DSPExtractor
 from .retrieval import ReferenceIndex
 from .scheduler import MultiRateScheduler
+from .streaming import run_stream
 
 WEB = Path(__file__).resolve().parent.parent / "web"
 LANGUAGES = {"auto", "und", "hi", "ta", "te", "bn", "mr", "kn", "en", "mixed"}
@@ -68,7 +69,7 @@ def pcm(frame):
 
 def create_app(settings=None, extractor=None, index=None):
     cfg = settings or Settings.from_env()
-    sessions, locks, uploads = {}, {}, {}
+    sessions, locks, uploads, active_streams = {}, {}, {}, {}
     audit_states = {}
     stats = {"windows": 0, "errors": 0, "total_ms": 0., "queue_ms": 0., "overruns": 0,
              "dropped_windows": 0, "latencies": []}
@@ -411,6 +412,8 @@ def create_app(settings=None, extractor=None, index=None):
 
     @app.websocket("/v1/stream/{key}")
     async def stream(ws: WebSocket, key: str):
+        protocol = None
+        owns_stream = False
         origin = ws.headers.get("origin")
         expected = str(ws.url).split("/v1/")[0].replace("ws://", "http://").replace("wss://", "https://")
         if origin and origin != expected:
@@ -425,7 +428,18 @@ def create_app(settings=None, extractor=None, index=None):
             if not authorized(str(auth.get("token", "")), ws.client.host if ws.client else ""):
                 await ws.close(code=1008)
                 return
+            protocol = auth.get("protocol")
             call = get_call(key)
+            if protocol == "pcm-v2":
+                if active_streams.get(key):
+                    await ws.send_json({"type": "error", "message": "Another producer is already connected"})
+                    await ws.close(code=1008)
+                    return
+                active_streams[key] = protocol
+                owns_stream = True
+                await ws.send_json({"type": "ready", "sample_rate": RATE, "protocol": "pcm-v2"})
+                await run_stream(ws, call, locks[key], record)
+                return
             await ws.send_json({"type": "ready", "sample_rate": RATE})
 
             while True:
@@ -510,7 +524,9 @@ def create_app(settings=None, extractor=None, index=None):
                 pass
         finally:
             # Closing an unauthorized connection must not delete someone else's call.
-            if "call" in locals() and key in locks:
+            if owns_stream:
+                active_streams.pop(key, None)
+            if "call" in locals() and key in locks and (protocol != "pcm-v2" or owns_stream):
                 async with locks[key]:
                     call.close()
                     sessions.pop(key, None)
