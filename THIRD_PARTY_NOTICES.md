@@ -11,3 +11,5 @@ Other model references:
 - [Vox-Profile](https://github.com/tiantiaf0627/vox-profile-release)
 
 Review each specific checkpoint's license and intended use before government or commercial deployment. The demo requires no paid API; hardware, network, storage and operational costs still exist.
+
+The frontend bundles the Unbounded typeface from Google Fonts under the SIL Open Font License 1.1. The complete license text is stored at `web/fonts/OFL-Unbounded.txt`.

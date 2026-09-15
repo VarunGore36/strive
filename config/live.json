@@ -1,0 +1,6 @@
+{
+  "mode": "demo",
+  "window_s": 2.0,
+  "stride_s": 0.5,
+  "stream_queue_windows": 1
+}

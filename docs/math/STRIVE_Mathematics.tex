@@ -1,0 +1,872 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{hyperref}
+
+\definecolor{strivenavy}{HTML}{1A3D6D}
+\definecolor{striveteal}{HTML}{2E8B8B}
+\definecolor{strivewarn}{HTML}{C0392B}
+\definecolor{strivegrey}{HTML}{F4F6F8}
+
+\hypersetup{colorlinks=true,linkcolor=strivenavy,urlcolor=striveteal,
+  pdftitle={STRIVE: Mathematical Specification},
+  pdfauthor={Team STRIVE, IISER Bhopal}}
+
+\titleformat{\section}{\Large\bfseries\color{strivenavy}}{\thesection}{0.7em}{}
+\titleformat{\subsection}{\large\bfseries\color{striveteal}}{\thesubsection}{0.6em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small\color{strivenavy}STRIVE --- Mathematical Specification}
+\rhead{\small\color{strivenavy}SIH26104}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\newtcolorbox{whybox}[1]{colback=strivegrey,colframe=striveteal,
+  fonttitle=\bfseries,title={Why this choice: #1},boxrule=0.6pt,arc=2pt,left=4pt,right=4pt}
+\newtcolorbox{warnbox}[1]{colback=red!3,colframe=strivewarn,
+  fonttitle=\bfseries,title={Limitation: #1},boxrule=0.6pt,arc=2pt,left=4pt,right=4pt}
+
+\lstset{basicstyle=\ttfamily\footnotesize,frame=single,framesep=4pt,
+  backgroundcolor=\color{strivegrey},rulecolor=\color{gray},breaklines=true}
+
+\newcommand{\code}[1]{\texttt{\small #1}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Ex}{\mathbb{E}}
+\newcommand{\unitvec}[1]{\widehat{#1}}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+{\Huge\bfseries\color{strivenavy} STRIVE\par}
+\vspace{0.6cm}
+{\LARGE\color{striveteal} Mathematical Specification\par}
+\vspace{0.4cm}
+{\large Every formula in the system, and why it was chosen\par}
+\vspace{2cm}
+{\large\bfseries AI-Powered Real-Time Detection and Prevention\\of Voice Cloning Impersonation Attacks\par}
+\vspace{1.5cm}
+\begin{tabular}{rl}
+\textbf{Problem Statement} & SIH26104\\
+\textbf{Organization} & AICTE Cyber Security Cell\\
+\textbf{Theme} & Blockchain \& Cybersecurity\\
+\textbf{Team} & STRIVE\\
+\textbf{Institution} & IISER Bhopal\\
+\textbf{Event} & Smart India Hackathon 2026\\
+\end{tabular}
+\vfill
+\begin{tcolorbox}[colback=red!3,colframe=strivewarn,width=0.92\textwidth]
+\textbf{Scope of claims.} This document specifies the mathematics that the
+implementation actually computes. Where a quantity is a heuristic, a proxy, or
+uncalibrated, it is labelled as such. No performance claim appears here that was
+not measured; measured values cite the evidence file that contains them.
+\end{tcolorbox}
+\vspace{1cm}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+%==========================================================
+\section{Notation and conventions}
+
+Let $x[n] \in \R$ denote a discrete-time audio signal at sampling rate
+$f_s = 16{,}000$\,Hz, normalised so $x[n] \in [-1,1]$. Time in seconds is
+$t = n/f_s$.
+
+\begin{longtable}{@{}lp{11.2cm}@{}}
+\toprule
+\textbf{Symbol} & \textbf{Meaning}\\
+\midrule
+\endhead
+$f_s$ & Sampling rate, fixed at $16{,}000$\,Hz\\
+$W$ & Analysis window length in seconds (default $2.0$)\\
+$H$ & Hop length in seconds (default $1.0$, supports $0.5$)\\
+$N_W = W f_s$ & Window length in samples\\
+$N_H = H f_s$ & Hop length in samples\\
+$\unitvec{v}$ & Unit-normalised vector, $\unitvec{v} = v/\max(\|v\|_2,\varepsilon)$\\
+$s_{\mathrm{glob}}$ & Global retrieval track score (artifact evidence)\\
+$s_{\mathrm{sess}}$ & Session consistency track score\\
+$s_{\mathrm{coh}}$ & Boundary coherence track score\\
+$R_a$ & Authenticity risk (acoustic, temporally smoothed)\\
+$R_c$ & Context risk (business metadata)\\
+$R_d$ & Decision risk (policy combination)\\
+$\varepsilon$ & Numerical floor, $10^{-12}$ unless stated\\
+\bottomrule
+\end{longtable}
+
+\begin{whybox}{unit normalisation everywhere}
+All embeddings are $L^2$-normalised before comparison. On the unit sphere the
+inner product equals the cosine similarity,
+$\langle \unitvec{u},\unitvec{v}\rangle = \cos\theta$, so a single FAISS inner-product
+index computes cosine similarity exactly with no extra work. It also removes
+loudness as a confound: a quiet and a loud recording of the same spectral shape map
+to the same point.
+\end{whybox}
+
+%==========================================================
+\section{Signal conditioning}
+
+\subsection{Canonical form and resampling}
+
+Every input is reduced to mono by channel averaging,
+$x[n] = \frac{1}{C}\sum_{c=1}^{C} x_c[n]$, then resampled to $f_s$.
+
+Resampling uses a polyphase rational filter. For input rate $r$ and target $f_s$,
+let $g=\gcd(r,f_s)$ and set the interpolation and decimation factors
+\begin{equation}
+L = \frac{f_s}{g}, \qquad M = \frac{r}{g}.
+\end{equation}
+The signal is upsampled by $L$ (zero insertion), low-pass filtered at
+$\omega_c = \pi/\max(L,M)$, and downsampled by $M$.
+
+\begin{whybox}{polyphase over naive interpolation}
+Rational $L/M$ resampling with an anti-aliasing filter is exact for the common
+telephony rates ($8$\,kHz $\to$ $16$\,kHz is $L{=}2, M{=}1$; $48$\,kHz is
+$L{=}1,M{=}3$; $44.1$\,kHz is $L{=}160,M{=}441$). Naive linear interpolation would
+alias high-frequency energy into the band where synthesis artifacts live --- precisely
+the evidence the detector depends on. Corrupting that band to save compute would be
+self-defeating.
+\end{whybox}
+
+\subsection{Overlapping window extraction}
+
+Windows are extracted at a fixed hop. Window $k$ spans samples
+\begin{equation}
+\mathcal{W}_k = \{\,kN_H,\; kN_H+1,\; \ldots,\; kN_H + N_W - 1\,\},
+\qquad k = 0,1,2,\ldots
+\end{equation}
+with start time $t_k = kH$ and end time $t_k + W$. The overlap between consecutive
+windows is $W-H$ seconds; the \emph{fresh} (previously unseen) portion is the last
+$H$ seconds, except for $k=0$ where the whole window is fresh.
+
+The constraint $0 < H \le W$ is enforced, and both $N_W$ and $N_H$ must be integers.
+For $W=2, H=0.5$ the emission rate is $1/H = 2$ windows per second.
+
+\begin{whybox}{fresh-sample accounting}
+Voiced-time accumulation uses only the fresh portion:
+$T_{\text{voiced}} \mathrel{+}= (|\text{fresh}|/f_s)\cdot a$ where $a$ is the activity
+fraction. Using the whole window would count overlapped audio $W/H$ times, inflating
+the evidence counter by $4\times$ at a $0.5$\,s hop and letting the system declare
+sufficient evidence long before it exists.
+\end{whybox}
+
+\subsection{Energy activity gate}
+
+The signal is framed into $20$\,ms blocks ($320$ samples). For block $m$,
+\begin{equation}
+\rho_m = \sqrt{\frac{1}{320}\sum_{n \in \text{block } m} x[n]^2},
+\qquad
+a = \frac{1}{M}\sum_{m=1}^{M} \mathbf{1}[\rho_m > \tau_a], \quad \tau_a = 0.008 .
+\end{equation}
+A window is analysed when $a \ge 0.25$.
+
+\begin{warnbox}{this is an energy detector, not a speech classifier}
+$a$ measures whether \emph{anything} is above the noise floor. Measured on 40 matched
+ASVspoof clip pairs, additive noise at $10$\,dB SNR raises the mean voiced fraction from
+$0.564$ to $1.000$ --- a $1.77\times$ inflation in which every frame is counted as speech.
+Consequently noisy clips clear the evidence gate $5.6\times$ more often than clean ones
+($28$ vs.\ $5$ clips) while their discriminative power is at its worst. Research mode
+substitutes a trained WebRTC VAD. See \S\ref{sec:findings}.
+\end{warnbox}
+
+%==========================================================
+\section{Spectral representations}
+
+\subsection{Short-time Fourier transform}
+
+With analysis window $w[\cdot]$ of length $N=400$ ($25$\,ms), hop $160$ ($10$\,ms),
+and FFT size $512$,
+\begin{equation}
+X[m,\kappa] = \sum_{n=0}^{N-1} x[mR+n]\, w[n]\, e^{-\mathrm{j}2\pi \kappa n / 512},
+\qquad P[m,\kappa] = |X[m,\kappa]|^2 .
+\end{equation}
+Bin $\kappa$ corresponds to frequency $f_\kappa = \kappa f_s/512 = 31.25\kappa$\,Hz.
+
+\begin{whybox}{25\,ms / 10\,ms framing}
+Speech is approximately stationary over $20$--$30$\,ms. Shorter frames lose frequency
+resolution ($\Delta f = f_s/512 = 31.25$\,Hz here, enough to resolve the harmonic comb
+of a typical $F_0$); longer frames smear transients, which is where vocoder artifacts
+concentrate. The $10$\,ms hop gives $2.5\times$ oversampling so a transient cannot fall
+between frames.
+\end{whybox}
+
+\subsection{Countermeasure embedding (demo extractor)}
+
+The power spectrogram is pooled into $B = 32$ contiguous frequency bands. For band $b$,
+\begin{equation}
+\beta[m,b] = \frac{1}{|b|}\sum_{\kappa \in b} P[m,\kappa],
+\qquad
+\tilde\beta[m,b] = \sqrt{\frac{\beta[m,b]}{\sum_{b'} \beta[m,b']}} .
+\end{equation}
+The square root of the normalised band energy is the \emph{Hellinger} representation:
+treating $\beta[m,\cdot]/\sum\beta$ as a probability distribution over bands,
+$\|\tilde\beta_1 - \tilde\beta_2\|_2$ is (up to $\sqrt{2}$) the Hellinger distance
+between spectra.
+
+The embedding concatenates the temporal mean and standard deviation:
+\begin{equation}
+v_{\mathrm{cm}} = \unitvec{\big[\; \Ex_m[\tilde\beta[m,\cdot]] \;\big\|\; \sigma_m[\tilde\beta[m,\cdot]] \;\big]} \in \R^{64}.
+\end{equation}
+
+\begin{whybox}{mean and variance, not mean alone}
+The mean captures the average spectral envelope; the standard deviation captures how
+much that envelope \emph{moves}. Synthetic speech is frequently over-smooth in time ---
+a vocoder produces less frame-to-frame spectral variance than a physical vocal tract.
+The $\sigma$ half of the vector is what lets a purely unsupervised representation
+carry any spoof-relevant signal at all.
+\end{whybox}
+
+\begin{warnbox}{this is a DSP surrogate}
+$v_{\mathrm{cm}}$ is hand-designed, not learned. It is an engineering stand-in so the
+streaming architecture can be built and measured before neural weights are available.
+Measured AUC on real ASVspoof 2019 LA data is $0.707$ (\S\ref{sec:findings}) --- weak
+but non-trivial signal, and explicitly the floor a trained countermeasure must beat.
+Every event it produces carries \code{demo\_only: true}.
+\end{warnbox}
+
+\subsection{Mel filterbank and cepstral coefficients}
+
+The mel scale approximates human pitch perception:
+\begin{equation}
+\mathrm{mel}(f) = 2595 \log_{10}\!\left(1 + \frac{f}{700}\right),
+\qquad
+\mathrm{mel}^{-1}(\mu) = 700\left(10^{\mu/2595} - 1\right).
+\end{equation}
+Centre frequencies $\{h_i\}_{i=0}^{27}$ are placed uniformly in mel and mapped back to
+Hz, giving $26$ triangular filters
+\begin{equation}
+\Lambda_i(f) = \max\!\left(0,\; \min\!\left(\frac{f-h_i}{h_{i+1}-h_i},\;
+\frac{h_{i+2}-f}{h_{i+2}-h_{i+1}}\right)\right).
+\end{equation}
+MFCCs are the DCT-II of the log filterbank energies, retaining the first $13$:
+\begin{equation}
+c_j = \sum_{i=0}^{25} \log\!\big(\max(E_i,\varepsilon)\big)\,
+\cos\!\left[\frac{\pi j (i + \tfrac12)}{26}\right], \qquad j = 0,\ldots,12 .
+\end{equation}
+
+\begin{whybox}{log then DCT}
+Source--filter theory models speech as excitation convolved with a vocal-tract
+response. Convolution becomes multiplication in the spectral domain and \emph{addition}
+after the logarithm, so the log-spectrum separates the two additively. The DCT then
+approximately decorrelates the result (it is the KLT for a first-order Markov process)
+and compacts energy into low indices, so $13$ coefficients retain most of the
+vocal-tract information. Truncating discards the fine harmonic structure, which is
+dominated by $F_0$ and by speaker identity rather than synthesis artifacts.
+\end{whybox}
+
+\subsection{Spectral shape descriptors}
+
+Per frame, with $\tilde P[\kappa] = P[\kappa] + \varepsilon$:
+\begin{align}
+\text{centroid:}\quad & \mu_f = \frac{\sum_\kappa f_\kappa \tilde P[\kappa]}{\sum_\kappa \tilde P[\kappa]}
+&& \text{spectral ``centre of mass''}\\[2pt]
+\text{rolloff:}\quad & f_{85} = \min\Big\{ f_\kappa : \textstyle\sum_{\kappa' \le \kappa} \tilde P[\kappa'] \ge 0.85 \sum_{\kappa'} \tilde P[\kappa'] \Big\}
+&& \text{where the energy ends}\\[2pt]
+\text{flatness:}\quad & \Phi = \frac{\exp\!\big(\frac{1}{K}\sum_\kappa \ln \tilde P[\kappa]\big)}{\frac{1}{K}\sum_\kappa \tilde P[\kappa]}
+&& \text{geometric / arithmetic mean}
+\end{align}
+
+\begin{whybox}{flatness as a tonality measure}
+By the AM--GM inequality $\Phi \in (0,1]$, with $\Phi = 1$ exactly when the spectrum is
+flat (white noise) and $\Phi \to 0$ for a pure tone. It is therefore a scale-invariant
+tonality index. Synthesis systems often mismodel the noise/harmonic balance of
+fricatives and breathiness, which $\Phi$ summarises in one number.
+\end{whybox}
+
+\subsection{Pitch, jitter and shimmer}
+
+Fundamental frequency is estimated by autocorrelation. For a mean-removed frame $f$,
+\begin{equation}
+r[\ell] = \sum_n f[n]\,f[n+\ell],
+\qquad
+\ell^\star = \arg\max_{40 \le \ell \le 320} r[\ell],
+\qquad
+F_0 = \frac{f_s}{\ell^\star}.
+\end{equation}
+The search range $\ell \in [40,320]$ corresponds to $F_0 \in [50,400]$\,Hz. The
+normalised peak $r[\ell^\star]/r[0]$ is the harmonicity; frames below $0.25$ (or $0.5$
+for the cycle analysis) are treated as unvoiced and excluded.
+
+With consecutive glottal period lengths $T_1,\ldots,T_K$ and peak-to-peak cycle
+amplitudes $A_1,\ldots,A_K$:
+\begin{equation}
+\text{jitter} = \frac{\frac{1}{K-1}\sum_{i=1}^{K-1} |T_{i+1}-T_i|}{\frac{1}{K}\sum_i T_i},
+\qquad
+\text{shimmer} = \frac{\frac{1}{K-1}\sum_{i=1}^{K-1} |A_{i+1}-A_i|}{\frac{1}{K}\sum_i A_i}.
+\end{equation}
+
+\begin{whybox}{jitter and shimmer as physiological cues}
+Human phonation is driven by tissue with mass and elasticity, so consecutive glottal
+cycles are never identical: healthy voices exhibit small but non-zero period and
+amplitude perturbation. Many synthesis pipelines generate excitation from a smooth
+parametric $F_0$ contour and therefore produce jitter and shimmer that are
+\emph{too low}. These are dimensionless ratios, so they are invariant to gain and to
+the speaker's absolute pitch.
+\end{whybox}
+
+\begin{warnbox}{weak, confoundable cues}
+Jitter and shimmer are sensitive to background noise, codec quantisation and the
+voicing decision itself. They are supporting evidence only and are never used as a
+standalone spoofing verdict.
+\end{warnbox}
+
+%==========================================================
+\section{Channel intelligence}
+\label{sec:channel}
+
+Channel measurements describe the \emph{transport}, never the speaker. A degraded
+channel means our evidence deserves less trust; it is never itself evidence of a clone.
+Every quantity below is deterministic and model-free. Unavailable quantities are
+returned as \code{null}, never as $0$.
+
+\subsection{Clipping ratio and level}
+\begin{equation}
+\mathrm{clip} = \frac{1}{N}\sum_{n} \mathbf{1}\big[\,|x[n]| \ge 0.99\,\big],
+\qquad
+L_{\mathrm{dBFS}} = 20\log_{10}\!\sqrt{\tfrac{1}{N}\textstyle\sum_n x[n]^2}.
+\end{equation}
+$L_{\mathrm{dBFS}}$ is \code{null} when the RMS is below $10^{-9}$ (digital silence),
+since $\log_{10} 0$ is undefined and reporting $0$\,dBFS would falsely indicate a
+full-scale signal.
+
+\subsection{Occupied bandwidth}
+
+Let $\bar P[\kappa]$ be the time-averaged power spectrum. The occupied bandwidth is the
+$99\%$ cumulative-power rolloff:
+\begin{equation}
+B = f_{\kappa^\star}, \qquad
+\kappa^\star = \min\Big\{\kappa : \textstyle\sum_{\kappa' \le \kappa}\bar P[\kappa'] \ge 0.99 \sum_{\kappa'}\bar P[\kappa'] \Big\}.
+\end{equation}
+
+\begin{whybox}{cumulative rolloff over a $-3$\,dB cutoff}
+A $-3$\,dB cutoff must be measured relative to a passband reference, which is unstable
+for speech because the passband level varies with phonation. The cumulative-energy
+definition needs no reference level and degrades gracefully: it always returns a
+frequency, and the fraction ($0.99$) sets exactly how much tail energy is ignored.
+Measured on the codec matrix it cleanly separates narrowband transport
+($\approx 2672$\,Hz for G.711 and $8$\,kHz resampling) from clean wideband
+($\approx 3625$\,Hz).
+\end{whybox}
+
+\begin{warnbox}{content dependence}
+$B$ depends on what is being said, not only on the channel. A low-pitched or quiet
+speaker on a wideband line can read as narrowband. $B$ is a channel \emph{hint}, not a
+codec classifier.
+\end{warnbox}
+
+\subsection{Signal-to-noise ratio proxy}
+
+Noise is estimated per frequency bin by \emph{minimum statistics}: over the frame index
+$m$, the low quantile of the power in each bin approximates the stationary noise floor,
+because speech is intermittent while noise is persistent.
+\begin{equation}
+\hat n[\kappa] = Q_{0.10}\big(\{P[m,\kappa]\}_m\big),
+\qquad
+\hat N = \sum_\kappa \hat n[\kappa],
+\qquad
+\hat S = \sum_\kappa \Ex_m\big[P[m,\kappa]\big] - \hat N,
+\end{equation}
+\begin{equation}
+\mathrm{SNR}_{\mathrm{dB}} = \mathrm{clip}\!\left(10\log_{10}\frac{\hat S}{\max(\hat N,\; 10^{-6}\hat T)},\; 0,\; 60\right),
+\qquad \hat T = \hat S + \hat N .
+\end{equation}
+
+\begin{whybox}{per-bin minimum statistics, not frame energy percentiles}
+The first implementation used the ratio of the $95$th to the $10$th percentile of
+\emph{frame energy}. That collapses on stationary input: for a signal with constant
+energy every frame is identical, the ratio is $1$, and the reported SNR is $0$\,dB
+regardless of how clean the signal is. In testing, a clean tone scored $0.0$\,dB while
+the same tone plus noise scored $0.6$\,dB --- the metric was inverted. Operating per
+frequency bin fixes this, because even a stationary tone occupies few bins and leaves
+the rest at the true noise floor. The floor $10^{-6}\hat T$ prevents a division blow-up
+on digitally clean input, which saturates to the $60$\,dB cap instead of returning
+``unmeasurable''.
+\end{whybox}
+
+\begin{warnbox}{a proxy, not a measurement}
+Verified monotonic in added noise (true $0/5/10/20/40$\,dB $\to$ estimated
+$11.8/15.1/19.5/28.7/47.9$\,dB) but biased high by roughly $8$\,dB, because the $10$th
+percentile underestimates the floor. Use it for ordering and for reliability weighting;
+do not quote it as a calibrated SNR.
+\end{warnbox}
+
+\subsection{Cross-window discontinuity}
+
+Let $\phi_k = (\rho_k, \mu_{f,k}, \nu_k, e_k)$ summarise fresh audio in window $k$:
+RMS, spectral centroid, noise floor ($10$th percentile frame energy) and final sample.
+Define a scale-free log jump
+\begin{equation}
+J(u,v;\delta) = \mathrm{clip}\!\left(\frac{\big|\ln\frac{u+\delta}{v+\delta}\big|}{\ln 10},\,0,\,1\right),
+\end{equation}
+which reaches $1$ at one order of magnitude of change. The discontinuity score is
+\begin{equation}
+D_k = \max\Big\{
+J(\rho_k,\rho_{k-1};10^{-3}),\;
+J(\nu_k,\nu_{k-1};10^{-8}),\;
+\tfrac{|\mu_{f,k}-\mu_{f,k-1}|}{f_s/4},\;
+\tfrac{|x_k[0]-e_{k-1}|}{\max(4\rho_k,\,10^{-6})}
+\Big\}
+\end{equation}
+with $D_0 = 0$ (no predecessor).
+
+\begin{whybox}{maximum rather than sum}
+A splice need only disturb \emph{one} of these quantities: an edit can preserve energy
+while shifting the noise floor, or preserve spectrum while leaving a sample-level step.
+A sum would dilute a single strong indicator across four terms; the maximum preserves
+it. The additive offsets $\delta$ keep the log finite when either side is silent.
+\end{whybox}
+
+\begin{warnbox}{packet loss is invisible here}
+Measured on the codec matrix, $1\%$, $3\%$ and $5\%$ packet loss produce channel
+readings identical to clean audio. Twenty-millisecond zero-erasures do not move the
+per-window aggregate energy, centroid or noise floor enough to register. Consequently
+\code{packet\_loss\_rate} must be supplied by the transport and is never inferred from
+the waveform. Detecting erasures from audio requires a dedicated zero-run detector, not
+a refinement of $D_k$.
+\end{warnbox}
+
+\subsection{Reliability aggregation}
+
+Channel quality is one minus a sum of bounded penalties:
+\begin{equation}
+Q = \mathrm{clip}\!\left(1 - \sum_{i} w_i \,\pi_i,\; 0,\; 1\right),
+\end{equation}
+\begin{align}
+\pi_{\mathrm{clip}} &= \min\!\left(1, \tfrac{\mathrm{clip}}{0.02}\right), &
+\pi_{\mathrm{disc}} &= D_k, \\
+\pi_{\mathrm{snr}} &= \mathrm{clip}\!\left(\tfrac{25 - \mathrm{SNR_{dB}}}{25-5},0,1\right), &
+\pi_{\mathrm{bw}} &= \mathrm{clip}\!\left(\tfrac{7000 - B}{7000-3400},0,1\right),
+\end{align}
+with default weights $w = (0.25, 0.20, 0.30, 0.25)$. A penalty whose input is
+unavailable is \emph{omitted}, not set to zero, and $Q$ itself is \code{null} when the
+window contains no usable audio.
+
+\begin{whybox}{linear ramps with explicit anchors}
+Each $\pi_i$ is a clipped linear ramp between a ``good'' and a ``bad'' anchor
+($25 \to 5$\,dB SNR; $7000 \to 3400$\,Hz bandwidth, the latter being the G.711
+passband). Linear ramps are monotone, bounded, and every constant is a physically
+interpretable number that a reviewer can argue with --- unlike a fitted sigmoid, which
+would imply calibration we have not earned. All constants live in configuration.
+\end{whybox}
+
+\begin{tcolorbox}[colback=strivegrey,colframe=strivenavy,title=\textbf{$Q$ is reliability, not risk}]
+$Q$ answers ``how much should we trust the acoustic evidence from this window?'' It
+never answers ``is this a clone?''. A pristine channel does not make a caller genuine,
+and a bad channel does not make a caller fake. Keeping these separate is why $Q$ is
+consumed by fusion weighting and never added to the risk score.
+\end{tcolorbox}
+
+%==========================================================
+\section{Evidence tracks}
+
+\subsection{Track 1 --- labelled-reference retrieval}
+
+The reference index holds unit embeddings $\{\unitvec{u}_i\}_{i=1}^{M}$ with labels
+$y_i \in \{0,1\}$ ($0$ bonafide, $1$ spoof). For a query $\unitvec{q}$, retrieve the $k$
+nearest neighbours by inner product,
+$\mathcal{N}_k(\unitvec{q}) = \operatorname{arg\,top-}k_i \langle \unitvec{q},\unitvec{u}_i\rangle$, and score
+\begin{equation}
+s_{\mathrm{glob}} = \frac{1}{k}\sum_{i \in \mathcal{N}_k(\unitvec{q})} y_i \;\in [0,1],
+\end{equation}
+the spoof fraction of the neighbourhood. The index is partitioned by language, falling
+back to a global pool when a partition has fewer than $20$ entries or contains a single
+class; the fallback is reported in the event as a reason code.
+
+\begin{whybox}{$k$-NN retrieval over a trained classifier head}
+A retrieval score is interpretable and auditable: every decision can be traced to the
+specific labelled clips that produced it, which matters for a fraud-prevention tool
+that must justify holding a transaction. It also extends to new attack generators by
+adding data rather than retraining. The cost is that quality is bounded by the corpus:
+a single-class or tiny partition cannot produce a meaningful score, which is exactly
+why the guard returns \code{null} instead of a number.
+\end{whybox}
+
+\subsection{Track 2 --- session consistency}
+
+Within a call, a bounded store of accepted profile vectors is maintained. The similarity
+of the current window to that store is
+\begin{equation}
+\sigma = \tfrac12 \underbrace{\Big(\tfrac{1}{k}\!\!\sum_{i \in \mathcal{N}_k}\!\! \langle \unitvec{p},\unitvec{p}_i\rangle\Big)}_{\text{speaker-level profile}}
+\;+\; \tfrac12 \underbrace{\Big(\tfrac{1}{|S|}\sum_{s \in S} \tfrac{1}{k}\!\!\sum_{j \in \mathcal{N}_k(s)}\!\! \langle \unitvec{s},\unitvec{s}_j\rangle\Big)}_{\text{segment-level}},
+\qquad
+s_{\mathrm{sess}} = \mathrm{clip}(1-\sigma,\,0,\,1).
+\end{equation}
+
+\paragraph{Trust-gated admission.} A window updates the store only if
+\begin{equation}
+s_{\mathrm{glob}} < 0.30 \quad\text{and}\quad \sigma > 0.70 .
+\end{equation}
+Bootstrap requires \emph{all} initial window scores below $0.30$, at least $3$ valid
+windows, and $\ge 4$\,s of voiced audio by the $5$\,s mark; otherwise the store is
+permanently blocked for that call.
+
+\begin{whybox}{a dual gate against profile poisoning}
+The session profile answers ``is the voice still the same as it was?'' --- which is only
+meaningful if the initial voice was genuine. Without gating, an attacker who is cloned
+from the first second would have the clone admitted as the reference, and every
+subsequent cloned window would score as perfectly consistent. Requiring low global risk
+\emph{and} high self-similarity means an admitted window must look genuine to the
+independent retrieval track and be consistent with what is already stored.
+\end{whybox}
+
+\begin{warnbox}{not proof against slow poisoning}
+The gate stops obvious contamination. A patient attacker who drifts the voice slowly,
+keeping each step inside both thresholds, is not addressed by this mechanism and has not
+been evaluated.
+\end{warnbox}
+
+\subsection{Track 3 --- boundary coherence}
+
+The seam between old and new audio lies at $\tau = W - H$ seconds inside the current
+window. Among adjacent segment pairs $(a,b)$ bracketing $\tau$ with a gap
+$b_{\text{start}} - a_{\text{end}} \le 0.12$\,s, select the pair whose midpoint is
+closest to $\tau$, and require that midpoint to be within $0.2$\,s of $\tau$. Then
+\begin{equation}
+s_{\mathrm{coh}} = \mathrm{clip}\big(1 - \langle \unitvec{v}_a, \unitvec{v}_b \rangle,\; 0,\; 1\big).
+\end{equation}
+If no admissible pair exists, the track returns \code{null}.
+
+\begin{whybox}{clipping a quantity whose natural range is $[0,2]$}
+Cosine similarity lies in $[-1,1]$, so $1-\cos$ lies in $[0,2]$. Values above $1$ mean
+anti-correlated embeddings, which for spectral segments indicates a pathological
+comparison rather than a stronger splice. Clipping keeps all track scores on a common
+$[0,1]$ scale so the fusion weights mean the same thing for every track.
+\end{whybox}
+
+\begin{warnbox}{a weak and confoundable cue}
+Adjacent \emph{natural} phonemes legitimately have different embeddings --- that is what
+makes them different phonemes. High $s_{\mathrm{coh}}$ therefore does not imply
+splicing, and the cue is further confounded by packet loss and phonetic content. It is
+supporting evidence with a small weight and has not been validated as a discriminator.
+\end{warnbox}
+
+%==========================================================
+\section{Fusion and temporal smoothing}
+
+\subsection{Age-scheduled weights}
+
+Let $A$ be the call age in seconds. The nominal weight vector over
+$(s_{\mathrm{glob}}, s_{\mathrm{sess}}, s_{\mathrm{coh}})$ is
+\begin{equation}
+w(A) = \begin{cases}
+(0.80,\; 0.00,\; 0.20) & A < 15\\
+(0.50,\; 0.30,\; 0.20) & 15 \le A \le 60\\
+(0.30,\; 0.50,\; 0.20) & A > 60 .
+\end{cases}
+\end{equation}
+
+\begin{whybox}{shifting weight from global to session evidence}
+Early in a call there is no session history, so the session weight is exactly zero ---
+not a small number, zero. As the call proceeds an in-call profile accumulates and
+becomes informative about mid-call speaker substitution, which the global track cannot
+see. The schedule encodes that changing information content.
+\end{whybox}
+
+\subsection{Availability masking}
+
+Let $m_i = \mathbf{1}[s_i \ne \code{null}]$. The effective weights are
+\begin{equation}
+\tilde w_i = \frac{m_i\, w_i}{\sum_j m_j w_j}
+\quad\text{if}\quad \textstyle\sum_j m_j w_j > 0,
+\end{equation}
+and the raw fused score is $s_{\mathrm{raw}} = \sum_i \tilde w_i s_i$. If
+$s_{\mathrm{glob}}$ is unavailable, \emph{no} risk is published.
+
+\begin{tcolorbox}[colback=strivegrey,colframe=strivenavy,title=\textbf{Absent evidence is not evidence of innocence}]
+The single most important line in the fusion is that a missing track is masked and the
+remaining weights renormalised --- it does \emph{not} contribute $s_i = 0$. Substituting
+zero would let a failed model, a cold-start session profile, or a disabled identity
+branch actively push the risk \emph{down}, manufacturing confidence from silence. The
+same principle makes a stale scheduled branch unavailable rather than reusing an expired
+value indefinitely.
+\end{tcolorbox}
+
+\subsection{Exponential moving average}
+
+\begin{equation}
+R_a^{(k)} = \alpha R_a^{(k-1)} + (1-\alpha)\, s_{\mathrm{raw}}^{(k)},
+\qquad \alpha = 0.7, \qquad R_a^{(-1)} = 0 .
+\end{equation}
+This is a first-order IIR low-pass filter with impulse response
+$(1-\alpha)\alpha^j$, effective memory
+$\sum_j j(1-\alpha)\alpha^j = \alpha/(1-\alpha) \approx 2.33$ windows, and
+$-3$\,dB cutoff at $\omega_c = \arccos\!\big(2 - \tfrac{1+\alpha^2}{2\alpha}\big)$.
+
+Starting from zero, $k$ consecutive maximal inputs give
+\begin{equation}
+R_a^{(k)} = 1 - \alpha^{k+1}.
+\end{equation}
+
+\begin{whybox}{smoothing is a false-positive control}
+A single anomalous window --- a cough, a codec glitch, one bad retrieval --- must not
+trigger a transaction hold. Requiring sustained evidence is the mechanism that makes
+``verify, do not block'' workable in production.
+\end{whybox}
+
+\begin{warnbox}{documented counterexamples, deliberately preserved}
+Two consequences are pinned by unit tests rather than tuned away:
+\begin{enumerate}[nosep,leftmargin=1.4em]
+\item \textbf{Warm-up.} Three maximal updates give $1-0.7^3 = 0.657 < 0.75$, so an alert
+cannot fire in three windows; five give $1-0.7^5 \approx 0.832$. The source design
+document's ``alert in three chunks'' claim is arithmetically wrong.
+\item \textbf{Mature-call dilution.} For $A > 60$ with all tracks available,
+$s = (1,0,0)$ fuses to $0.30$ --- below the warning band. A static clone that matches
+its own bootstrap profile can therefore suppress a maximal global alarm. This is a real
+weakness of the specified schedule and is recorded, not hidden.
+\end{enumerate}
+\end{warnbox}
+
+%==========================================================
+\section{Risk separation and policy}
+
+\subsection{Context risk}
+
+Business metadata maps to a bounded score by additive contributions:
+\begin{equation}
+R_c = \min\Big(1,\;
+\underbrace{\begin{cases}0.35 & \text{amount} \ge 10^6\\ 0.15 & \text{amount} \ge 10^5\\ 0 & \text{otherwise}\end{cases}}_{\text{transaction value}}
++\; 0.20\,\mathbf{1}[\text{urgent}]
++\; 0.25\,\mathbf{1}[\text{new beneficiary}]
++\; 0.20\,\mathbf{1}[\text{privileged}]\Big).
+\end{equation}
+
+\subsection{Decision risk}
+
+\begin{equation}
+\boxed{\;R_d = 1 - (1-R_a)\left(1 - \tfrac12 R_c\right)\;}
+\end{equation}
+
+\begin{whybox}{a noisy-OR, and why context is halved}
+Reading $R_a$ and $R_c$ as independent probabilities that \emph{something is wrong},
+$1-R_d = (1-R_a)(1-\tfrac12 R_c)$ is the probability that neither concern fires. This is
+the noisy-OR combination: it is monotone in both arguments, saturates correctly at $1$,
+and never lets a low context risk \emph{reduce} the acoustic risk --- since
+$R_d \ge R_a$ always, with equality when $R_c = 0$. The factor $\tfrac12$ caps how much
+business metadata alone can contribute, because a large payment is not evidence of voice
+cloning. A wire transfer of INR $10^7$ with pristine audio reaches only
+$R_d = 0.175$.
+\end{whybox}
+
+\begin{tcolorbox}[colback=strivegrey,colframe=strivenavy,title=\textbf{The separation invariant}]
+$R_a$ is a function of acoustic evidence \emph{only}. Context can never alter it. The
+two combine at exactly one place, $R_d$, and a unit test asserts that changing context
+metadata leaves $R_a$ bit-identical. Collapsing the three numbers into one would make it
+impossible for an operator to know whether a call was flagged because the voice was
+suspicious or merely because the payment was large.
+\end{tcolorbox}
+
+\subsection{Decision bands}
+
+With warning threshold $\theta_w = 0.50$ and alert threshold $\theta_a = 0.75$:
+\begin{equation}
+\text{state} =
+\begin{cases}
+\textsc{analyzing} & R_a = \code{null}\\
+\textsc{critical/high} & R_d \ge \theta_a\\
+\textsc{review} & R_d \ge \theta_w \;\text{ or }\; R_c \ge 0.7\\
+\textsc{low} & \text{otherwise.}
+\end{cases}
+\end{equation}
+A publishable risk additionally requires $T_{\text{voiced}} \ge 4$\,s; otherwise the
+state is \textsc{analyzing} with reason \code{LOW\_EVIDENCE}. Alerts \emph{latch} until
+an independent verification is recorded.
+
+\begin{whybox}{latching, and never publishing a green state early}
+Risk is non-monotone: the age schedule can lower a score after a genuine alarm, so an
+unlatched policy would silently release a hold. Latching makes the safe action sticky
+until a human verification clears it. Similarly, the evidence gate ensures silence or a
+cold start reports \textsc{analyzing} rather than \textsc{low} --- an unknown is never
+displayed as a clean bill of health.
+\end{whybox}
+
+%==========================================================
+\section{Scheduling and latency}
+
+\subsection{Multi-rate branch cadence}
+
+Branch $i$ with cadence $C_i$ runs at window $k$ (audio time $t_k$) iff
+$t_k - t_{\text{last},i} \ge C_i$. A published result expires after $3C_i$; between runs
+the cached result is reused. Results are in one of three states --- missing, fresh, or
+stale --- and the latter two are never conflated with a zero score.
+
+\begin{whybox}{cadence on the audio clock, not the wall clock}
+If cadence were measured in wall-clock time, an accelerated offline replay (which
+processes $40$\,s of audio in $0.25$\,s) would find every branch ``not yet due'' and skip
+nearly all of them, making benchmarks meaningless and irreproducible. Measuring on the
+audio timeline makes an offline replay schedule branches exactly as a live call would,
+so evaluation and production agree by construction.
+\end{whybox}
+
+Measured effect at $W=2$, $H=0.5$: the artifact branch runs $39$ times instead of $77$
+while all $77$ windows still emit a fused score, giving a $1.63\times$--$1.67\times$
+throughput gain reproduced on two different processors.
+
+\subsection{Capture backpressure}
+
+The capture queue holds at most $N_q = 8$ completed windows. On overflow the
+\emph{oldest} window is discarded and counted.
+
+\begin{whybox}{drop oldest, not newest}
+A live risk score is only useful if it describes the audio the caller is speaking now.
+Discarding the newest window would freeze the operator's view in the past while the
+backlog drains --- the precise failure the score exists to prevent. Dropping the oldest
+bounds latency at $N_q H$ seconds and makes the loss explicit rather than letting delay
+grow without limit. A drop also resets the continuity state, so the gap is not
+mis-scored as a splice.
+\end{whybox}
+
+\subsection{Percentiles and real-time factor}
+
+The nearest-rank percentile of a sorted sample $z_{(1)} \le \cdots \le z_{(n)}$ is
+\begin{equation}
+P_p = z_{(\lceil pn/100 \rceil)},
+\qquad
+\mathrm{RTF} = \frac{\text{audio seconds processed}}{\text{compute seconds}} .
+\end{equation}
+
+\begin{whybox}{nearest-rank, and why $p95$ rather than the mean}
+Nearest-rank returns an \emph{observed} value, never an interpolation between two
+measurements that were never made. Latency distributions are right-skewed, so the mean
+hides the tail that actually breaks a real-time budget; $p95$ against the hop $H$ is the
+meaningful pass/fail test. $\mathrm{RTF} > 1$ is the condition for keeping up with live
+audio. An empty sample returns \code{null}, not $0$, since $0$\,ms would read as
+``instantaneous''.
+\end{whybox}
+
+%==========================================================
+\section{Evaluation metrics}
+
+Let scores $\{z_i\}$ and labels $\{y_i\}$, $y_i = 1$ for spoof. For threshold $\theta$,
+\begin{equation}
+\mathrm{FPR}(\theta) = \frac{|\{i: y_i=0,\, z_i \ge \theta\}|}{|\{i : y_i = 0\}|},
+\qquad
+\mathrm{TPR}(\theta) = \frac{|\{i: y_i=1,\, z_i \ge \theta\}|}{|\{i : y_i = 1\}|}.
+\end{equation}
+
+\paragraph{Equal error rate.} With $\mathrm{FNR} = 1-\mathrm{TPR}$, the EER is the value
+where $\mathrm{FPR} = \mathrm{FNR}$. Since the empirical ROC is a step function the
+crossing generally falls between two operating points $a,b$; the implementation
+interpolates linearly on $g(\theta) = \mathrm{FPR}-\mathrm{FNR}$:
+\begin{equation}
+\lambda = \frac{-g_a}{g_b - g_a},
+\qquad
+\mathrm{EER} = \mathrm{FPR}_a + \lambda\,(\mathrm{FPR}_b - \mathrm{FPR}_a).
+\end{equation}
+
+\paragraph{ROC-AUC.} $\mathrm{AUC} = \Pr\big(z_i > z_j \mid y_i = 1, y_j = 0\big)$,
+the probability that a random spoof outranks a random bonafide --- equivalently the
+normalised Mann--Whitney $U$ statistic. It is threshold-free.
+
+\paragraph{Brier score and calibration error.}
+\begin{equation}
+\mathrm{BS} = \frac{1}{n}\sum_i (z_i - y_i)^2,
+\qquad
+\mathrm{ECE} = \sum_{b=1}^{10} \frac{|B_b|}{n}\,\big|\,\bar z_{B_b} - \bar y_{B_b}\,\big|.
+\end{equation}
+
+\begin{whybox}{reporting a family of metrics, not a single headline}
+EER assumes the two error types are equally costly, which is false here: a false
+positive costs a callback, a false negative costs a fraudulent transfer. AUC is
+threshold-free but insensitive to calibration. Brier and ECE ask whether a score of
+$0.8$ actually means $80\%$, which matters because the policy engine thresholds on the
+number. Together they describe ranking quality, operating-point behaviour, and
+calibration --- no one of them is sufficient.
+\end{whybox}
+
+\begin{warnbox}{low-FPR operating points need cohort size}
+With $n_0$ genuine clips the finest resolvable false-positive rate is $1/n_0$. The
+measured cohort has $n_0 = 65$, so $1/65 \approx 1.5\%$ and a ``TPR at $1\%$ FPR''
+figure is \emph{not resolvable}. The tooling emits \code{low\_fpr\_sample\_warning} when
+$n_0 < 100$ and that number must not be quoted.
+\end{warnbox}
+
+%==========================================================
+\section{Measured results and findings}
+\label{sec:findings}
+
+Corpus: ASVspoof 2019 LA evaluation partition (ODC-BY), $150$ bonafide / $150$ spoof,
+speaker-disjoint $31/31$ split, reference index built from clean audio only. Extractor:
+\code{dsp-surrogate-v1}. Full report in \code{evidence/codec-benchmark.json}.
+
+\begin{center}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+\textbf{Condition} & \textbf{EER \%} & \textbf{$\Delta$EER} & \textbf{AUC} & \textbf{$\Delta$AUC} & \textbf{Bona.\ med.} & \textbf{Spoof med.}\\
+\midrule
+\texttt{clean} & 37.01 & --- & 0.707 & --- & 0.350 & 0.463\\
+\texttt{opus\_16k} & 37.43 & $+0.42$ & 0.688 & $-0.019$ & 0.400 & 0.475\\
+\texttt{opus\_32k} & 39.66 & $+2.66$ & 0.686 & $-0.021$ & 0.400 & 0.500\\
+\texttt{narrowband\_8k} & 37.40 & $+0.40$ & 0.676 & $-0.031$ & 0.275 & 0.325\\
+\texttt{g711\_ulaw} & 37.49 & $+0.48$ & 0.676 & $-0.031$ & 0.275 & 0.325\\
+\textbf{\texttt{noise\_10db}} & \textbf{42.14} & $\mathbf{+5.13}$ & \textbf{0.639} & $\mathbf{-0.068}$ & 0.450 & 0.450\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Finding 1 --- noise dominates codec compression.}
+Every codec leg costs only $0.019$--$0.031$ AUC. Additive noise at $10$\,dB SNR costs
+$0.068$, more than twice the worst codec, and collapses the median separation between
+bonafide and spoof to \emph{exactly zero}. For this feature set the dominant robustness
+threat is noise, not compression.
+
+\paragraph{Finding 2 --- noise inflates perceived evidence while destroying it.}
+Clips clearing the live-call evidence gate: $5$ (clean) versus $28$ (\code{noise\_10db}),
+a $5.6\times$ increase. The mechanism is the energy activity gate of \S2.3, whose voiced
+fraction rises from $0.564$ to $1.000$ under the same condition. The system becomes more
+confident it has sufficient evidence exactly when that evidence is least discriminative.
+Since $\mathrm{SNR_{dB}}$ already reads $19.6$\,dB and $Q$ is available per window, the
+fusion has the signal required to discount this evidence; wiring $Q$ into the fusion
+weights is the outstanding work.
+
+\begin{tcolorbox}[colback=red!3,colframe=strivewarn,title=\textbf{Interpretation}]
+$\mathrm{AUC} = 0.707$ is weak but non-trivial signal from an unsupervised DSP
+representation on real spoofed speech. It is \emph{not} a usable detector and not a
+deepfake verdict. Its purpose is to establish a measured floor on a real corpus, so that
+a trained countermeasure can be compared against something rather than asserted. No
+value in this document was estimated, extrapolated, or tuned to look better.
+\end{tcolorbox}
+
+%==========================================================
+\section{Summary of design principles}
+
+\begin{enumerate}[leftmargin=1.6em]
+\item \textbf{Absent evidence is masked, never zeroed.} Missing, stale and failed
+branches are excluded from a renormalised weighted sum instead of contributing a score
+that would read as ``genuine''.
+\item \textbf{Unavailable measurements are \code{null}.} A quantity that could not be
+computed is never reported as $0$, because $0$ is a legitimate value for most of these
+quantities and would be indistinguishable from a real measurement.
+\item \textbf{Channel reliability is orthogonal to risk.} $Q$ scales how much the
+acoustic evidence is trusted; it is never added to the risk.
+\item \textbf{Authenticity and context never mix except at the decision.} Enforced by a
+unit test.
+\item \textbf{Bounded ranges throughout.} Every track score, penalty and risk is clipped
+to $[0,1]$ so weights carry consistent meaning.
+\item \textbf{Scale-free comparisons.} Log ratios, cosine similarity, and dimensionless
+ratios (jitter, shimmer, flatness) so gain and pitch do not act as confounds.
+\item \textbf{Counterexamples are pinned, not tuned.} The EMA warm-up and mature-call
+dilution weaknesses are asserted by tests so they cannot be silently ``fixed'' by moving
+a threshold.
+\end{enumerate}
+
+\vspace{0.8cm}
+\begin{center}
+\color{strivenavy}\itshape
+Team STRIVE --- IISER Bhopal --- Smart India Hackathon 2026\\
+\normalfont\small Secure Voices $\cdot$ Stronger India
+\end{center}
+
+\end{document}

@@ -1,0 +1,352 @@
+{
+  "hardware": {
+    "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.39",
+    "machine": "x86_64",
+    "processor": "12th Gen Intel(R) Core(TM) i5-1235U",
+    "python": "3.12.3",
+    "cpu_count": 12,
+    "device": "cpu",
+    "gpu": null
+  },
+  "git_commit": "0ee4c3f22a32076350929eccbe1104fab16c814d",
+  "source_state": "uncommitted working tree",
+  "rows": [
+    {
+      "concurrent_calls": 1,
+      "seconds_per_call": 10,
+      "delay_ms": 0,
+      "frames_sent": 500,
+      "frames_acknowledged": 500,
+      "windows_scored": 17,
+      "windows_dropped": 0,
+      "max_queue_depth": 1,
+      "latency_ms": {
+        "ack_roundtrip": {
+          "p50": 1.92,
+          "p95": 2.617,
+          "p99": 2.945,
+          "max": 4.858,
+          "mean": 1.953,
+          "count": 500
+        },
+        "ingest": {
+          "p50": 0.359,
+          "p95": 0.552,
+          "p99": 0.689,
+          "max": 1.087,
+          "mean": 0.374,
+          "count": 500
+        },
+        "window_end_to_client": {
+          "p50": 40.27,
+          "p95": 68.164,
+          "p99": 68.164,
+          "max": 68.164,
+          "mean": 41.763,
+          "count": 17
+        },
+        "compute": {
+          "p50": 35.111,
+          "p95": 62.227,
+          "p99": 62.227,
+          "max": 62.227,
+          "mean": 36.91,
+          "count": 17
+        },
+        "queue": {
+          "p50": 0.862,
+          "p95": 1.407,
+          "p99": 1.407,
+          "max": 1.407,
+          "mean": 0.886,
+          "count": 17
+        }
+      },
+      "process_tree_cpu_seconds_approx": 1.31,
+      "process_tree_cpu_percent_approx": 13.0,
+      "process_tree_peak_rss_mib": 143.3,
+      "runtime": "python"
+    },
+    {
+      "concurrent_calls": 1,
+      "seconds_per_call": 10,
+      "delay_ms": 0,
+      "frames_sent": 500,
+      "frames_acknowledged": 500,
+      "windows_scored": 17,
+      "windows_dropped": 0,
+      "max_queue_depth": 1,
+      "latency_ms": {
+        "ack_roundtrip": {
+          "p50": 20.376,
+          "p95": 21.449,
+          "p99": 22.928,
+          "max": 41.682,
+          "mean": 16.653,
+          "count": 500
+        },
+        "ingest": {
+          "p50": 0.015,
+          "p95": 0.05,
+          "p99": 0.109,
+          "max": 0.275,
+          "mean": 0.019,
+          "count": 500
+        },
+        "window_end_to_client": {
+          "p50": 41.992,
+          "p95": 61.421,
+          "p99": 61.421,
+          "max": 61.421,
+          "mean": 44.172,
+          "count": 17
+        },
+        "compute": {
+          "p50": 25.309,
+          "p95": 39.581,
+          "p99": 39.581,
+          "max": 39.581,
+          "mean": 27.273,
+          "count": 17
+        },
+        "queue": {
+          "p50": 0.131,
+          "p95": 0.22,
+          "p99": 0.22,
+          "max": 0.22,
+          "mean": 0.129,
+          "count": 17
+        }
+      },
+      "process_tree_cpu_seconds_approx": 0.56,
+      "process_tree_cpu_percent_approx": 5.5,
+      "process_tree_peak_rss_mib": 143.9,
+      "runtime": "rust-python"
+    },
+    {
+      "concurrent_calls": 4,
+      "seconds_per_call": 10,
+      "delay_ms": 0,
+      "frames_sent": 2000,
+      "frames_acknowledged": 2000,
+      "windows_scored": 68,
+      "windows_dropped": 0,
+      "max_queue_depth": 1,
+      "latency_ms": {
+        "ack_roundtrip": {
+          "p50": 2.317,
+          "p95": 10.18,
+          "p99": 15.265,
+          "max": 25.14,
+          "mean": 3.347,
+          "count": 2000
+        },
+        "ingest": {
+          "p50": 0.211,
+          "p95": 1.006,
+          "p99": 2.349,
+          "max": 5.275,
+          "mean": 0.341,
+          "count": 2000
+        },
+        "window_end_to_client": {
+          "p50": 172.038,
+          "p95": 299.628,
+          "p99": 335.111,
+          "max": 335.111,
+          "mean": 175.937,
+          "count": 68
+        },
+        "compute": {
+          "p50": 163.337,
+          "p95": 287.134,
+          "p99": 324.251,
+          "max": 324.251,
+          "mean": 167.356,
+          "count": 68
+        },
+        "queue": {
+          "p50": 1.9,
+          "p95": 4.168,
+          "p99": 5.004,
+          "max": 5.004,
+          "mean": 2.202,
+          "count": 68
+        }
+      },
+      "process_tree_cpu_seconds_approx": 5.48,
+      "process_tree_cpu_percent_approx": 52.9,
+      "process_tree_peak_rss_mib": 155.3,
+      "runtime": "python"
+    },
+    {
+      "concurrent_calls": 4,
+      "seconds_per_call": 10,
+      "delay_ms": 0,
+      "frames_sent": 2000,
+      "frames_acknowledged": 2000,
+      "windows_scored": 68,
+      "windows_dropped": 0,
+      "max_queue_depth": 1,
+      "latency_ms": {
+        "ack_roundtrip": {
+          "p50": 20.66,
+          "p95": 22.184,
+          "p99": 24.669,
+          "max": 41.988,
+          "mean": 16.695,
+          "count": 2000
+        },
+        "ingest": {
+          "p50": 0.009,
+          "p95": 0.04,
+          "p99": 0.135,
+          "max": 0.704,
+          "mean": 0.016,
+          "count": 2000
+        },
+        "window_end_to_client": {
+          "p50": 63.577,
+          "p95": 103.586,
+          "p99": 123.725,
+          "max": 123.725,
+          "mean": 71.541,
+          "count": 68
+        },
+        "compute": {
+          "p50": 51.238,
+          "p95": 82.021,
+          "p99": 101.038,
+          "max": 101.038,
+          "mean": 54.722,
+          "count": 68
+        },
+        "queue": {
+          "p50": 0.132,
+          "p95": 0.281,
+          "p99": 0.486,
+          "max": 0.486,
+          "mean": 0.148,
+          "count": 68
+        }
+      },
+      "process_tree_cpu_seconds_approx": 4.01,
+      "process_tree_cpu_percent_approx": 39.0,
+      "process_tree_peak_rss_mib": 557.5,
+      "runtime": "rust-python"
+    },
+    {
+      "concurrent_calls": 8,
+      "seconds_per_call": 10,
+      "delay_ms": 0,
+      "frames_sent": 4000,
+      "frames_acknowledged": 4000,
+      "windows_scored": 118,
+      "windows_dropped": 18,
+      "max_queue_depth": 1,
+      "latency_ms": {
+        "ack_roundtrip": {
+          "p50": 115.418,
+          "p95": 325.846,
+          "p99": 405.862,
+          "max": 489.618,
+          "mean": 127.607,
+          "count": 4000
+        },
+        "ingest": {
+          "p50": 0.157,
+          "p95": 3.122,
+          "p99": 7.706,
+          "max": 15.9,
+          "mean": 0.647,
+          "count": 4000
+        },
+        "window_end_to_client": {
+          "p50": 821.868,
+          "p95": 1307.512,
+          "p99": 1400.764,
+          "max": 1502.412,
+          "mean": 837.817,
+          "count": 118
+        },
+        "compute": {
+          "p50": 518.129,
+          "p95": 687.708,
+          "p99": 706.632,
+          "max": 743.247,
+          "mean": 516.84,
+          "count": 118
+        },
+        "queue": {
+          "p50": 54.041,
+          "p95": 484.105,
+          "p99": 570.193,
+          "max": 666.276,
+          "mean": 149.462,
+          "count": 118
+        }
+      },
+      "process_tree_cpu_seconds_approx": 12.47,
+      "process_tree_cpu_percent_approx": 113.0,
+      "process_tree_peak_rss_mib": 176.5,
+      "runtime": "python"
+    },
+    {
+      "concurrent_calls": 8,
+      "seconds_per_call": 10,
+      "delay_ms": 0,
+      "frames_sent": 4000,
+      "frames_acknowledged": 4000,
+      "windows_scored": 136,
+      "windows_dropped": 0,
+      "max_queue_depth": 1,
+      "latency_ms": {
+        "ack_roundtrip": {
+          "p50": 20.628,
+          "p95": 23.077,
+          "p99": 26.212,
+          "max": 41.928,
+          "mean": 17.001,
+          "count": 4000
+        },
+        "ingest": {
+          "p50": 0.009,
+          "p95": 0.045,
+          "p99": 0.236,
+          "max": 0.607,
+          "mean": 0.018,
+          "count": 4000
+        },
+        "window_end_to_client": {
+          "p50": 101.254,
+          "p95": 103.559,
+          "p99": 104.179,
+          "max": 104.26,
+          "mean": 89.522,
+          "count": 136
+        },
+        "compute": {
+          "p50": 77.219,
+          "p95": 87.878,
+          "p99": 90.439,
+          "max": 90.505,
+          "mean": 73.118,
+          "count": 136
+        },
+        "queue": {
+          "p50": 0.142,
+          "p95": 0.216,
+          "p99": 0.273,
+          "max": 0.579,
+          "mean": 0.148,
+          "count": 136
+        }
+      },
+      "process_tree_cpu_seconds_approx": 10.63,
+      "process_tree_cpu_percent_approx": 102.1,
+      "process_tree_peak_rss_mib": 1108.3,
+      "runtime": "rust-python"
+    }
+  ],
+  "measurement_note": "Warmed session workers; actual paced loopback PCM; DSP fixture only. Same 2 s window / 0.5 s hop, 20 ms packets, thread limits and in-memory audit. CPU/RSS sampled from server process trees; summed RSS double-counts shared pages. Single run per configuration; excludes model initialization, physical capture and WAN."
+}

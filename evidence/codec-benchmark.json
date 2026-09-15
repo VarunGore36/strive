@@ -1,0 +1,494 @@
+{
+  "run_id": "codec04-1788870525",
+  "generated_utc": "2026-09-08T12:28:45.340973+00:00",
+  "hardware": {
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+    "processor": "x86_64",
+    "python": "3.12.9"
+  },
+  "extractor": {
+    "id": "dsp-surrogate-v1",
+    "is_surrogate": true
+  },
+  "reference_index": {
+    "vectors": 129,
+    "clean_clips": 148,
+    "demo_only": true
+  },
+  "split": {
+    "reference_speakers": 31,
+    "evaluation_speakers": 31,
+    "speaker_disjoint": true,
+    "seed": 26104
+  },
+  "geometry": {
+    "window_s": 2.0,
+    "hop_s": 1.0
+  },
+  "conditions": {
+    "clean": {
+      "clips": 152,
+      "failures": 0,
+      "scored": 122,
+      "abstained": 30,
+      "passed_live_call_evidence_gate": 5,
+      "metrics": {
+        "total": 152,
+        "scored": 122,
+        "abstained": 30,
+        "coverage": 0.8026315789473685,
+        "genuine_scored": 65,
+        "spoof_scored": 57,
+        "avg_alert_time_s": null,
+        "avg_detection_delay_s": null,
+        "attacks": 85,
+        "attacks_alerted": 0,
+        "attacks_without_alert": 85,
+        "pre_onset_warnings": 0,
+        "roc_auc": 0.7071524966261808,
+        "pr_auc": 0.697774299934881,
+        "eer": 0.3700887198986058,
+        "eer_method": "linear interpolation of empirical ROC crossing",
+        "tpr_at_fpr_1pct": 0.17543859649122806,
+        "fpr_resolution": 0.015384615384615385,
+        "low_fpr_sample_warning": true,
+        "ece_10_bins": 0.08107923497267759,
+        "brier": 0.22299151867030967,
+        "fpr_at_075": 0.0,
+        "fnr_at_075": 1.0
+      },
+      "score_distribution": {
+        "bonafide": {
+          "p25": 0.25,
+          "p50": 0.35,
+          "p75": 0.45,
+          "max": 0.575,
+          "mean": 0.347,
+          "count": 65
+        },
+        "spoof": {
+          "p25": 0.375,
+          "p50": 0.463,
+          "p75": 0.55,
+          "max": 0.667,
+          "mean": 0.45,
+          "count": 57
+        }
+      },
+      "latency_ms": {
+        "p50": 5.609,
+        "p95": 6.272,
+        "max": 6.564,
+        "mean": 5.291,
+        "count": 245
+      },
+      "channel": {
+        "quality": {
+          "p50": 0.749,
+          "max": 1.0,
+          "mean": 0.748,
+          "count": 122
+        },
+        "bandwidth_hz": {
+          "p50": 3625.0,
+          "max": 7140.625,
+          "mean": 3793.385,
+          "count": 122
+        },
+        "snr_db": {
+          "p50": 44.733,
+          "max": 60.0,
+          "mean": 43.785,
+          "count": 122
+        }
+      }
+    },
+    "g711_ulaw": {
+      "clips": 152,
+      "failures": 0,
+      "scored": 122,
+      "abstained": 30,
+      "passed_live_call_evidence_gate": 4,
+      "metrics": {
+        "total": 152,
+        "scored": 122,
+        "abstained": 30,
+        "coverage": 0.8026315789473685,
+        "genuine_scored": 65,
+        "spoof_scored": 57,
+        "avg_alert_time_s": null,
+        "avg_detection_delay_s": null,
+        "attacks": 85,
+        "attacks_alerted": 0,
+        "attacks_without_alert": 85,
+        "pre_onset_warnings": 0,
+        "roc_auc": 0.6759784075573549,
+        "pr_auc": 0.6554994581829863,
+        "eer": 0.3748932536293766,
+        "eer_method": "linear interpolation of empirical ROC crossing",
+        "tpr_at_fpr_1pct": 0.12280701754385964,
+        "fpr_resolution": 0.015384615384615385,
+        "low_fpr_sample_warning": true,
+        "ece_10_bins": 0.1574453551912568,
+        "brier": 0.2537562613843351,
+        "fpr_at_075": 0.0,
+        "fnr_at_075": 1.0
+      },
+      "score_distribution": {
+        "bonafide": {
+          "p25": 0.25,
+          "p50": 0.275,
+          "p75": 0.35,
+          "max": 0.45,
+          "mean": 0.284,
+          "count": 65
+        },
+        "spoof": {
+          "p25": 0.275,
+          "p50": 0.325,
+          "p75": 0.4,
+          "max": 0.55,
+          "mean": 0.339,
+          "count": 57
+        }
+      },
+      "latency_ms": {
+        "p50": 5.474,
+        "p95": 6.178,
+        "max": 6.761,
+        "mean": 5.17,
+        "count": 245
+      },
+      "channel": {
+        "quality": {
+          "p50": 0.708,
+          "max": 0.761,
+          "mean": 0.7,
+          "count": 122
+        },
+        "bandwidth_hz": {
+          "p50": 2671.875,
+          "max": 3562.5,
+          "mean": 2581.925,
+          "count": 122
+        },
+        "snr_db": {
+          "p50": 43.995,
+          "max": 58.502,
+          "mean": 43.244,
+          "count": 122
+        }
+      }
+    },
+    "narrowband_8k": {
+      "clips": 152,
+      "failures": 0,
+      "scored": 122,
+      "abstained": 30,
+      "passed_live_call_evidence_gate": 4,
+      "metrics": {
+        "total": 152,
+        "scored": 122,
+        "abstained": 30,
+        "coverage": 0.8026315789473685,
+        "genuine_scored": 65,
+        "spoof_scored": 57,
+        "avg_alert_time_s": null,
+        "avg_detection_delay_s": null,
+        "attacks": 85,
+        "attacks_alerted": 0,
+        "attacks_without_alert": 85,
+        "pre_onset_warnings": 0,
+        "roc_auc": 0.6758434547908232,
+        "pr_auc": 0.6518191219070877,
+        "eer": 0.37404580152671757,
+        "eer_method": "linear interpolation of empirical ROC crossing",
+        "tpr_at_fpr_1pct": 0.12280701754385964,
+        "fpr_resolution": 0.015384615384615385,
+        "low_fpr_sample_warning": true,
+        "ece_10_bins": 0.15587431693989068,
+        "brier": 0.2539210496357013,
+        "fpr_at_075": 0.0,
+        "fnr_at_075": 1.0
+      },
+      "score_distribution": {
+        "bonafide": {
+          "p25": 0.25,
+          "p50": 0.275,
+          "p75": 0.35,
+          "max": 0.45,
+          "mean": 0.286,
+          "count": 65
+        },
+        "spoof": {
+          "p25": 0.275,
+          "p50": 0.325,
+          "p75": 0.4,
+          "max": 0.55,
+          "mean": 0.34,
+          "count": 57
+        }
+      },
+      "latency_ms": {
+        "p50": 5.484,
+        "p95": 6.236,
+        "max": 6.735,
+        "mean": 5.191,
+        "count": 245
+      },
+      "channel": {
+        "quality": {
+          "p50": 0.708,
+          "max": 0.761,
+          "mean": 0.699,
+          "count": 122
+        },
+        "bandwidth_hz": {
+          "p50": 2671.875,
+          "max": 3562.5,
+          "mean": 2579.214,
+          "count": 122
+        },
+        "snr_db": {
+          "p50": 44.728,
+          "max": 60.0,
+          "mean": 43.79,
+          "count": 122
+        }
+      }
+    },
+    "noise_10db": {
+      "clips": 152,
+      "failures": 0,
+      "scored": 122,
+      "abstained": 30,
+      "passed_live_call_evidence_gate": 28,
+      "metrics": {
+        "total": 152,
+        "scored": 122,
+        "abstained": 30,
+        "coverage": 0.8026315789473685,
+        "genuine_scored": 65,
+        "spoof_scored": 57,
+        "avg_alert_time_s": null,
+        "avg_detection_delay_s": null,
+        "attacks": 85,
+        "attacks_alerted": 0,
+        "attacks_without_alert": 85,
+        "pre_onset_warnings": 0,
+        "roc_auc": 0.6390013495276653,
+        "pr_auc": 0.6346597615849221,
+        "eer": 0.42143178748311566,
+        "eer_method": "linear interpolation of empirical ROC crossing",
+        "tpr_at_fpr_1pct": 0.07017543859649122,
+        "fpr_resolution": 0.015384615384615385,
+        "low_fpr_sample_warning": true,
+        "ece_10_bins": 0.06137295081967219,
+        "brier": 0.2387011896630237,
+        "fpr_at_075": 0.0,
+        "fnr_at_075": 1.0
+      },
+      "score_distribution": {
+        "bonafide": {
+          "p25": 0.4,
+          "p50": 0.45,
+          "p75": 0.45,
+          "max": 0.525,
+          "mean": 0.432,
+          "count": 65
+        },
+        "spoof": {
+          "p25": 0.425,
+          "p50": 0.45,
+          "p75": 0.5,
+          "max": 0.575,
+          "mean": 0.457,
+          "count": 57
+        }
+      },
+      "latency_ms": {
+        "p50": 6.244,
+        "p95": 6.495,
+        "max": 7.183,
+        "mean": 6.268,
+        "count": 245
+      },
+      "channel": {
+        "quality": {
+          "p50": 0.898,
+          "max": 0.927,
+          "mean": 0.893,
+          "count": 122
+        },
+        "bandwidth_hz": {
+          "p50": 7062.5,
+          "max": 7480.469,
+          "mean": 7052.137,
+          "count": 122
+        },
+        "snr_db": {
+          "p50": 19.638,
+          "max": 21.392,
+          "mean": 19.515,
+          "count": 122
+        }
+      }
+    },
+    "opus_16k": {
+      "clips": 152,
+      "failures": 0,
+      "scored": 122,
+      "abstained": 30,
+      "passed_live_call_evidence_gate": 4,
+      "metrics": {
+        "total": 152,
+        "scored": 122,
+        "abstained": 30,
+        "coverage": 0.8026315789473685,
+        "genuine_scored": 65,
+        "spoof_scored": 57,
+        "avg_alert_time_s": null,
+        "avg_detection_delay_s": null,
+        "attacks": 85,
+        "attacks_alerted": 0,
+        "attacks_without_alert": 85,
+        "pre_onset_warnings": 0,
+        "roc_auc": 0.6883940620782727,
+        "pr_auc": 0.7017042137391527,
+        "eer": 0.3743016759776536,
+        "eer_method": "linear interpolation of empirical ROC crossing",
+        "tpr_at_fpr_1pct": 0.08771929824561403,
+        "fpr_resolution": 0.015384615384615385,
+        "low_fpr_sample_warning": true,
+        "ece_10_bins": 0.09900956284153006,
+        "brier": 0.22615422928051,
+        "fpr_at_075": 0.0,
+        "fnr_at_075": 1.0
+      },
+      "score_distribution": {
+        "bonafide": {
+          "p25": 0.25,
+          "p50": 0.4,
+          "p75": 0.45,
+          "max": 0.625,
+          "mean": 0.366,
+          "count": 65
+        },
+        "spoof": {
+          "p25": 0.375,
+          "p50": 0.475,
+          "p75": 0.575,
+          "max": 0.7,
+          "mean": 0.46,
+          "count": 57
+        }
+      },
+      "latency_ms": {
+        "p50": 5.504,
+        "p95": 6.167,
+        "max": 6.629,
+        "mean": 5.224,
+        "count": 245
+      },
+      "channel": {
+        "quality": {
+          "p50": 0.73,
+          "max": 0.975,
+          "mean": 0.726,
+          "count": 122
+        },
+        "bandwidth_hz": {
+          "p50": 3093.75,
+          "max": 6656.25,
+          "mean": 3302.798,
+          "count": 122
+        },
+        "snr_db": {
+          "p50": 44.918,
+          "max": 60.0,
+          "mean": 44.414,
+          "count": 122
+        }
+      }
+    },
+    "opus_32k": {
+      "clips": 152,
+      "failures": 0,
+      "scored": 122,
+      "abstained": 30,
+      "passed_live_call_evidence_gate": 4,
+      "metrics": {
+        "total": 152,
+        "scored": 122,
+        "abstained": 30,
+        "coverage": 0.8026315789473685,
+        "genuine_scored": 65,
+        "spoof_scored": 57,
+        "avg_alert_time_s": null,
+        "avg_detection_delay_s": null,
+        "attacks": 85,
+        "attacks_alerted": 0,
+        "attacks_without_alert": 85,
+        "pre_onset_warnings": 0,
+        "roc_auc": 0.6860998650472334,
+        "pr_auc": 0.7127045469788231,
+        "eer": 0.39664804469273746,
+        "eer_method": "linear interpolation of empirical ROC crossing",
+        "tpr_at_fpr_1pct": 0.22807017543859648,
+        "fpr_resolution": 0.015384615384615385,
+        "low_fpr_sample_warning": true,
+        "ece_10_bins": 0.1445867486338798,
+        "brier": 0.22766581995673954,
+        "fpr_at_075": 0.0,
+        "fnr_at_075": 1.0
+      },
+      "score_distribution": {
+        "bonafide": {
+          "p25": 0.267,
+          "p50": 0.4,
+          "p75": 0.45,
+          "max": 0.575,
+          "mean": 0.365,
+          "count": 65
+        },
+        "spoof": {
+          "p25": 0.375,
+          "p50": 0.5,
+          "p75": 0.575,
+          "max": 0.7,
+          "mean": 0.456,
+          "count": 57
+        }
+      },
+      "latency_ms": {
+        "p50": 5.524,
+        "p95": 6.248,
+        "max": 6.738,
+        "mean": 5.241,
+        "count": 245
+      },
+      "channel": {
+        "quality": {
+          "p50": 0.727,
+          "max": 0.972,
+          "mean": 0.725,
+          "count": 122
+        },
+        "bandwidth_hz": {
+          "p50": 3135.417,
+          "max": 6593.75,
+          "mean": 3300.963,
+          "count": 122
+        },
+        "snr_db": {
+          "p50": 45.159,
+          "max": 60.0,
+          "mean": 44.247,
+          "count": 122
+        }
+      }
+    }
+  },
+  "score_definition": "Per-clip score is the mean s_global (labelled-reference retrieval track) over windows where it was available. The gated s_risk is reported separately as passed_live_call_evidence_gate: min_voiced_s=4.0 s is a live-call safety rule and most ASVspoof utterances are shorter, so it is a product-coverage fact here, not a detection metric. The gate was NOT lowered to produce results.",
+  "interpretation": "Scores come from the extractor named above. A surrogate extractor makes these harness and channel measurements, NOT a deepfake detection result. EER/AUC near 0.5 means no separation, which is the expected floor for DSP features and the baseline a trained countermeasure must beat."
+}

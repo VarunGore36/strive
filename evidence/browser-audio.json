@@ -1,0 +1,113 @@
+{
+  "browser": "152.0.7977.82",
+  "synthetic_microphone": true,
+  "passed": true,
+  "restart_passed": true,
+  "page_errors": [],
+  "notice": "Microphone active \u00b7 16 kHz mono \u00b7 20 ms packets \u00b7 0.5 s score updates after warm-up. Demo scores are unvalidated.",
+  "sample_rate": 16000,
+  "events": [
+    {
+      "age": 2,
+      "latency_ms": {
+        "compute": 10.572,
+        "queue": 1.505,
+        "end_to_end": 12.077,
+        "audio_lag": 0,
+        "browser_roundtrip": 19.100000023841858
+      },
+      "capture": {
+        "windows_queued": 1,
+        "windows_scored": 1,
+        "windows_dropped": 0,
+        "frames_ingested": 100,
+        "overflow_events": 0,
+        "max_depth": 1,
+        "current_depth": 0,
+        "capacity": 1
+      }
+    },
+    {
+      "age": 2.5,
+      "latency_ms": {
+        "compute": 9.54,
+        "queue": 1.166,
+        "end_to_end": 10.706,
+        "audio_lag": 0,
+        "browser_roundtrip": 18.69999998807907
+      },
+      "capture": {
+        "windows_queued": 2,
+        "windows_scored": 2,
+        "windows_dropped": 0,
+        "frames_ingested": 125,
+        "overflow_events": 0,
+        "max_depth": 1,
+        "current_depth": 0,
+        "capacity": 1
+      }
+    },
+    {
+      "age": 3,
+      "latency_ms": {
+        "compute": 9.436,
+        "queue": 1.065,
+        "end_to_end": 10.501,
+        "audio_lag": 0,
+        "browser_roundtrip": 19.5
+      },
+      "capture": {
+        "windows_queued": 3,
+        "windows_scored": 3,
+        "windows_dropped": 0,
+        "frames_ingested": 150,
+        "overflow_events": 0,
+        "max_depth": 1,
+        "current_depth": 0,
+        "capacity": 1
+      }
+    },
+    {
+      "age": 3.5,
+      "latency_ms": {
+        "compute": 12.753,
+        "queue": 1.247,
+        "end_to_end": 14,
+        "audio_lag": 20,
+        "browser_roundtrip": 23.400000005960464
+      },
+      "capture": {
+        "windows_queued": 4,
+        "windows_scored": 4,
+        "windows_dropped": 0,
+        "frames_ingested": 175,
+        "overflow_events": 0,
+        "max_depth": 1,
+        "current_depth": 0,
+        "capacity": 1
+      }
+    },
+    {
+      "age": 4,
+      "latency_ms": {
+        "compute": 6.685,
+        "queue": 0.907,
+        "end_to_end": 7.592,
+        "audio_lag": 0,
+        "browser_roundtrip": 16.400000005960464
+      },
+      "capture": {
+        "windows_queued": 5,
+        "windows_scored": 5,
+        "windows_dropped": 0,
+        "frames_ingested": 200,
+        "overflow_events": 0,
+        "max_depth": 1,
+        "current_depth": 0,
+        "capacity": 1
+      }
+    }
+  ],
+  "running": true,
+  "measurement_note": "Headless Chrome synthetic microphone through the real AudioWorklet and WebSocket. browser_roundtrip measures main-thread delivery of the final PCM packet to receipt of its window result using the same monotonic clock. Excludes physical microphone/OS capture and worklet packetization latency."
+}

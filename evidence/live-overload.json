@@ -1,0 +1,116 @@
+{
+  "hardware": {
+    "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.39",
+    "machine": "x86_64",
+    "processor": "12th Gen Intel(R) Core(TM) i5-1235U",
+    "python": "3.12.3",
+    "cpu_count": 12,
+    "device": "cpu",
+    "gpu": null
+  },
+  "git_commit": "0ee4c3f22a32076350929eccbe1104fab16c814d",
+  "protocol": "pcm-v2",
+  "audio_seconds": 8,
+  "window_s": 2,
+  "hop_s": 0.5,
+  "frame_ms": 20,
+  "injected_inference_ms": 1200.0,
+  "model_version": "dsp-surrogate-v1",
+  "demo_only": true,
+  "frames_sent": 400,
+  "frames_acknowledged": 400,
+  "windows_scored": 6,
+  "capture": {
+    "windows_queued": 13,
+    "windows_scored": 6,
+    "windows_dropped": 7,
+    "frames_ingested": 400,
+    "overflow_events": 7,
+    "max_depth": 1,
+    "current_depth": 0,
+    "capacity": 1
+  },
+  "latency_ms": {
+    "ack_roundtrip": {
+      "p50": 20.328,
+      "p95": 22.184,
+      "max": 41.229,
+      "mean": 13.337,
+      "count": 400
+    },
+    "ingest": {
+      "p50": 0.333,
+      "p95": 0.612,
+      "max": 1.17,
+      "mean": 0.361,
+      "count": 400
+    },
+    "window_end_to_client": {
+      "p50": 1442.508,
+      "p95": 1720.977,
+      "max": 1720.977,
+      "mean": 1496.498,
+      "count": 6
+    },
+    "compute": {
+      "p50": 1229.423,
+      "p95": 1239.567,
+      "max": 1239.567,
+      "mean": 1231.229,
+      "count": 6
+    },
+    "queue": {
+      "p50": 209.757,
+      "p95": 475.309,
+      "max": 475.309,
+      "mean": 255.91,
+      "count": 6
+    },
+    "sender_lateness": {
+      "p50": 1.204,
+      "p95": 2.228,
+      "max": 2.483,
+      "mean": 1.242,
+      "count": 400
+    }
+  },
+  "first_result_from_stream_start_ms": 3262.0162420207635,
+  "stage_ms": {
+    "vad": {
+      "p50": 0.192,
+      "p95": 0.638,
+      "max": 0.638,
+      "mean": 0.265,
+      "count": 6
+    },
+    "channel": {
+      "p50": 6.665,
+      "p95": 11.243,
+      "max": 11.243,
+      "mean": 7.273,
+      "count": 6
+    },
+    "artifact": {
+      "p50": 1221.011,
+      "p95": 1224.684,
+      "max": 1224.684,
+      "mean": 1221.798,
+      "count": 6
+    },
+    "session": {
+      "p50": 1.08,
+      "p95": 4.13,
+      "max": 4.13,
+      "mean": 1.566,
+      "count": 6
+    },
+    "fusion": {
+      "p50": 0.113,
+      "p95": 0.161,
+      "max": 0.161,
+      "mean": 0.123,
+      "count": 6
+    }
+  },
+  "measurement_note": "Actual loopback WebSocket, paced synthetic PCM. Window-end to client uses one monotonic clock and includes sender scheduling, network, server queue, compute and return delivery. Excludes physical capture and browser rendering. No detector accuracy claim."
+}

@@ -1,4 +1,5 @@
 """Run the real API/pipeline, save events, and create a self-contained replay."""
+import base64
 import json
 from pathlib import Path
 import platform
@@ -36,6 +37,8 @@ def main():
     (evidence / 'benchmark.json').write_text(json.dumps(report, indent=2, allow_nan=False), encoding='utf-8')
     html = (root / 'web/index.html').read_text(encoding='utf-8')
     css = (root / 'web/style.css').read_text(encoding='utf-8'); js = (root / 'web/app.js').read_text(encoding='utf-8')
+    font = base64.b64encode((root / 'web/fonts/unbounded-600.ttf').read_bytes()).decode('ascii')
+    css = css.replace('/assets/fonts/unbounded-600.ttf', 'data:font/ttf;base64,' + font)
     html = html.replace('<link rel="stylesheet" href="/assets/style.css">', '<style>' + css + '</style>')
     data = json.dumps(result, ensure_ascii=True).replace('</', '<\\/')
     html = html.replace('<script src="/assets/app.js"></script>', '<script>window.STRIVE_DEMO=' + data + ';</script><script>' + js + '</script>')

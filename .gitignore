@@ -4,6 +4,8 @@
 .runtime/
 .research-venv/
 .export-venv/
+.impeccable/
+native/audio-runtime/target/
 data/demo/manifest.csv
 data/demo/audio/
 *.m4a

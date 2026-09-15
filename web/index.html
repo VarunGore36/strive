@@ -1,46 +1,286 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>STRIVE | Real-time voice risk</title>
   <meta name="description" content="STRIVE real-time voice impersonation risk and hold-and-verify demonstration.">
+  <meta name="theme-color" content="#08090a">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='9' fill='%230E1013'/%3E%3Cg stroke-linecap='round' stroke-width='2.4' fill='none'%3E%3Cpath d='M9 20v-6' stroke='%236B7480'/%3E%3Cpath d='M13.5 22.5v-11' stroke='%239AA3AE'/%3E%3Cpath d='M17 26V8' stroke='%23E9B44C'/%3E%3Cpath d='M20.5 22.5v-11' stroke='%239AA3AE'/%3E%3Cpath d='M25 20v-6' stroke='%236B7480'/%3E%3C/g%3E%3C/svg%3E">
   <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
-<header class="topbar"><div class="brand"><span class="brand-mark">S</span><div><strong>STRIVE</strong><small>Streaming Training-free Real-time Identity-Verification Engine</small></div></div><div class="identity"><span>SIH26104</span><span>TEAM NULL POINTER</span><i id="connection-dot"></i><b id="connection">Connecting</b></div></header>
-<main>
-  <section class="hero"><div><p class="kicker">AI-POWERED REAL-TIME DEFENCE</p><h1>Stop voice impersonation <span>during the call.</span></h1><p>Watch acoustic evidence develop, protect a sensitive action, and verify the caller through a trusted channel.</p></div><div id="mode" class="runtime-badge">DEMO EVIDENCE MODE<small>Not a neural accuracy benchmark</small></div></section>
-  <div id="notice" class="notice" role="status">Ready. Choose the mid-call scenario for the recommended presentation.</div>
-  <section class="launch-card">
-    <div class="source-block"><p class="label">INPUT SOURCE</p><div class="button-row"><button id="upload">Upload call audio</button><button id="mic">Live microphone</button><input id="file" type="file" accept=".wav,.flac,.mp3,.m4a,.aac,.ogg,.opus,.webm,audio/*" hidden><select id="playback-mode" aria-label="Playback mode"><option value="realtime">Presentation / realtime</option><option value="accelerated">Accelerated / test</option></select></div></div>
-    <div class="scenario-block"><p class="label">PRESENTATION SCENARIOS <span>DEMO / SYNTHETIC</span></p><div class="button-row"><button class="scenario" data-scenario="genuine">Genuine Call</button><button class="scenario" data-scenario="spoof">Deepfake / Spoof Call</button><button class="scenario primary" data-scenario="mid_call">Mid-Call Voice Replacement</button></div></div>
-    <div class="utility-row"><button id="stop" disabled>Stop</button><button id="new-call">Start New Call</button><button id="reset">Reset Demo</button><button id="presentation-mode">Presentation Mode</button></div>
+<a class="skip-link" href="#dashboard">Skip to dashboard</a>
+
+<header class="topbar">
+  <div class="brand">
+    <!-- Voiceprint aperture: a symmetrical waveform whose centre bar breaks
+         past the others - the anomaly the engine exists to find. -->
+    <svg class="brand-mark" viewBox="0 0 34 34" fill="none" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="strive-mark" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#F2C874"/>
+          <stop offset="1" stop-color="#D99B2E"/>
+        </linearGradient>
+      </defs>
+      <rect x="1" y="1" width="32" height="32" rx="9"
+            stroke="url(#strive-mark)" stroke-opacity=".45" stroke-width="1.3"/>
+      <g stroke-linecap="round" stroke-width="2.3">
+        <path d="M9 20v-6" stroke="#6B7480"/>
+        <path d="M13.5 22.5v-11" stroke="#9AA3AE"/>
+        <path d="M17 26V8" stroke="url(#strive-mark)"/>
+        <path d="M20.5 22.5v-11" stroke="#9AA3AE"/>
+        <path d="M25 20v-6" stroke="#6B7480"/>
+      </g>
+    </svg>
+    <div>
+      <strong>STRIVE</strong>
+      <small>Streaming Training-free Real-time Identity-Verification Engine</small>
+    </div>
+  </div>
+  <div class="identity">
+    <a class="overview-link" href="/">Overview</a>
+    <span>SIH26104</span>
+    <span>TEAM NULL POINTER</span>
+    <i id="connection-dot" aria-hidden="true"></i>
+    <b id="connection">Connecting</b>
+  </div>
+</header>
+
+<main aria-label="Voice integrity dashboard">
+
+  <section class="hero" aria-labelledby="hero-title">
+    <div>
+      <p class="kicker">AI-POWERED REAL-TIME DEFENCE</p>
+      <h1 id="hero-title">Stop voice impersonation <span>during the call.</span></h1>
+      <p>Watch acoustic evidence develop, protect a sensitive action, and verify the caller through a trusted channel.</p>
+    </div>
+    <div id="mode" class="runtime-badge">DEMO EVIDENCE MODE<small>Not a neural accuracy benchmark</small></div>
   </section>
-  <section class="progress-card" id="playback-card" hidden><div><strong id="source-name">No source</strong><span id="source-meta">16 kHz mono</span></div><progress id="playback-progress" max="1" value="0"></progress><b id="playback-clock">00:00 / 00:00</b></section>
-  <section class="dashboard">
-    <article class="panel risk-panel">
-      <div class="panel-title"><div><p class="label">CALL STATUS</p><h2 id="call-state">READY</h2></div><span id="call-detail">Waiting for audio</span></div>
-      <div class="risk-cards"><div><span>AUTHENTICITY RISK</span><strong id="auth">—</strong><small id="auth-state">ANALYZING</small></div><div><span>CONTEXT RISK</span><strong id="context-risk">80</strong><small>BUSINESS METADATA</small></div><div><span>DECISION RISK</span><strong id="decision">—</strong><small id="decision-state">ANALYZING</small></div></div>
-      <div class="chart-heading"><span>RISK TIMELINE</span><span id="clock">00:00</span></div><canvas id="chart" height="250" aria-label="Authenticity and decision risk timeline" role="img"></canvas>
-      <div class="legend"><span><i class="auth-line"></i>Authenticity</span><span><i class="decision-line"></i>Decision</span><span><i class="warn-line"></i>Review 50</span><span><i class="high-line"></i>High 75</span><span id="onset-legend" hidden><i class="onset-line"></i>Voice change</span></div><div id="alert-timing" class="alert-timing" hidden></div>
+
+  <div id="notice" class="notice" role="status" aria-live="polite">Ready. Choose the mid-call scenario for the recommended presentation.</div>
+
+  <section class="launch-card" aria-label="Call source and scenarios">
+    <div class="source-block">
+      <p class="label" id="source-label">INPUT SOURCE</p>
+      <div class="button-row" role="group" aria-labelledby="source-label">
+        <button id="upload" type="button">Upload call audio</button>
+        <button id="mic" type="button">Live microphone</button>
+        <input id="file" type="file" accept=".wav,.flac,.mp3,.m4a,.aac,.ogg,.opus,.webm,audio/*" hidden>
+        <select id="playback-mode" aria-label="Playback mode">
+          <option value="realtime">Presentation / realtime</option>
+          <option value="accelerated">Accelerated / test</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="scenario-block">
+      <p class="label" id="scenario-label">PRESENTATION SCENARIOS <span>DEMO / SYNTHETIC</span></p>
+      <div class="button-row" role="group" aria-labelledby="scenario-label">
+        <button class="scenario" type="button" data-scenario="genuine">Genuine Call</button>
+        <button class="scenario" type="button" data-scenario="spoof">Deepfake / Spoof Call</button>
+        <button class="scenario primary" type="button" data-scenario="mid_call">Mid-Call Voice Replacement</button>
+      </div>
+    </div>
+
+    <div class="utility-row" role="group" aria-label="Session controls">
+      <button id="stop" type="button" disabled>Stop</button>
+      <button id="new-call" type="button">Start New Call</button>
+      <button id="reset" type="button">Reset Demo</button>
+      <button id="presentation-mode" type="button" aria-pressed="false">Presentation Mode</button>
+    </div>
+  </section>
+
+  <section class="progress-card" id="playback-card" aria-label="Playback progress" hidden>
+    <div>
+      <strong id="source-name">No source</strong>
+      <span id="source-meta">16 kHz mono</span>
+    </div>
+    <progress id="playback-progress" max="1" value="0" aria-label="Playback position"></progress>
+    <b id="playback-clock">00:00 / 00:00</b>
+  </section>
+
+  <section class="dashboard" id="dashboard">
+
+    <!-- Risk timeline -------------------------------------------------- -->
+    <article class="panel risk-panel" aria-labelledby="risk-heading">
+      <div class="panel-title">
+        <div>
+          <p class="label" id="risk-heading">CALL STATUS</p>
+          <h2 id="call-state" aria-live="polite">READY</h2>
+        </div>
+        <span id="call-detail">Waiting for audio</span>
+      </div>
+
+      <div class="risk-cards">
+        <div>
+          <span id="auth-label">AUTHENTICITY RISK</span>
+          <strong id="auth" aria-labelledby="auth-label" aria-live="polite">—</strong>
+          <small id="auth-state">ANALYZING</small>
+        </div>
+        <div>
+          <span id="context-label">CONTEXT RISK</span>
+          <strong id="context-risk" aria-labelledby="context-label">80</strong>
+          <small>BUSINESS METADATA</small>
+        </div>
+        <div>
+          <span id="decision-label">DECISION RISK</span>
+          <strong id="decision" aria-labelledby="decision-label" aria-live="polite">—</strong>
+          <small id="decision-state">ANALYZING</small>
+        </div>
+      </div>
+
+      <div class="chart-heading"><span>RISK TIMELINE</span><span id="clock">00:00</span></div>
+      <canvas id="chart" height="250" role="img" aria-label="Authenticity and decision risk timeline"></canvas>
+
+      <div class="legend">
+        <span><i class="auth-line" aria-hidden="true"></i>Authenticity</span>
+        <span><i class="decision-line" aria-hidden="true"></i>Decision</span>
+        <span><i class="warn-line" aria-hidden="true"></i>Review 50</span>
+        <span><i class="high-line" aria-hidden="true"></i>High 75</span>
+        <span id="onset-legend" hidden><i class="onset-line" aria-hidden="true"></i>Voice change</span>
+      </div>
+      <div id="alert-timing" class="alert-timing" hidden></div>
     </article>
-    <aside class="panel action-panel">
-      <div class="panel-title"><div><p class="label">PREVENTION WORKFLOW</p><h3>Protected action</h3></div><span class="mock-tag">SIMULATED</span></div><div class="transaction"><span>Requested action</span><strong>₹10,00,000 fund transfer</strong></div>
-      <div class="context-grid"><label>Amount (₹)<input id="amount" type="number" value="1000000" min="0" max="1000000000000"></label><label><input id="urgent" type="checkbox" checked> Urgency: High</label><label><input id="beneficiary" type="checkbox" checked> New beneficiary</label><label><input id="privileged" type="checkbox"> Privileged request</label></div><button id="context-apply">Apply business context</button><p class="separation">Context changes decision risk only. It never changes acoustic authenticity risk.</p>
-      <div id="policy" class="policy">AWAITING EVIDENCE</div><button id="hold" class="danger" disabled>Hold &amp; Verify</button>
-      <div class="verify-box"><label>Trusted secondary channel<select id="verification"><option value="callback">Registered-number callback</option><option value="mfa">MFA challenge</option><option value="supervisor">Supervisor approval</option></select></label><p>Choose the simulated outcome:</p><div class="outcomes"><button data-outcome="verified" disabled>Verified</button><button data-outcome="failed" disabled>Failed</button><button data-outcome="review" disabled>Supervisor review</button></div></div><div id="transaction-result" class="workflow-result">No action is currently held.</div>
+
+    <!-- Prevention workflow -------------------------------------------- -->
+    <aside class="panel action-panel" aria-labelledby="workflow-heading">
+      <div class="panel-title">
+        <div>
+          <p class="label">PREVENTION WORKFLOW</p>
+          <h3 id="workflow-heading">Protected action</h3>
+        </div>
+        <span class="mock-tag">SIMULATED</span>
+      </div>
+
+      <div class="transaction">
+        <span>Requested action</span>
+        <strong>₹10,00,000 fund transfer</strong>
+      </div>
+
+      <fieldset class="context-grid">
+        <legend class="visually-hidden">Business context</legend>
+        <label for="amount">Amount (₹)
+          <input id="amount" type="number" value="1000000" min="0" max="1000000000000">
+        </label>
+        <label for="urgent"><input id="urgent" type="checkbox" checked> Urgency: High</label>
+        <label for="beneficiary"><input id="beneficiary" type="checkbox" checked> New beneficiary</label>
+        <label for="privileged"><input id="privileged" type="checkbox"> Privileged request</label>
+      </fieldset>
+      <button id="context-apply" type="button">Apply business context</button>
+      <p class="separation">Context changes decision risk only. It never changes acoustic authenticity risk.</p>
+
+      <div id="policy" class="policy" role="status" aria-live="polite">AWAITING EVIDENCE</div>
+      <button id="hold" class="danger" type="button" disabled>Hold &amp; Verify</button>
+
+      <div class="verify-box">
+        <label for="verification">Trusted secondary channel
+          <select id="verification">
+            <option value="callback">Registered-number callback</option>
+            <option value="mfa">MFA challenge</option>
+            <option value="supervisor">Supervisor approval</option>
+          </select>
+        </label>
+        <p id="outcome-label">Choose the simulated outcome:</p>
+        <div class="outcomes" role="group" aria-labelledby="outcome-label">
+          <button type="button" data-outcome="verified" disabled>Verified</button>
+          <button type="button" data-outcome="failed" disabled>Failed</button>
+          <button type="button" data-outcome="review" disabled>Supervisor review</button>
+        </div>
+      </div>
+      <div id="transaction-result" class="workflow-result" role="status" aria-live="polite">No action is currently held.</div>
     </aside>
-    <article class="panel evidence-panel">
-      <div class="panel-title"><div><p class="label">LIVE EVIDENCE</p><h3>Independent signal tracks</h3></div><span>Unavailable evidence is never shown as zero</span></div><div class="evidence-grid">
-        <div class="evidence-card" data-branch="artifact"><div><b>Artifact / Spoof Evidence</b><span class="branch-state">Unavailable</span></div><strong class="branch-value">—</strong><progress max="1" value="0"></progress><small class="branch-reason">Waiting for evidence</small></div>
-        <div class="evidence-card" data-branch="session"><div><b>Session Voice Consistency</b><span class="branch-state">Unavailable</span></div><strong class="branch-value">—</strong><progress max="1" value="0"></progress><small class="branch-reason">Temporary profile not established</small><em id="similarity">Similarity —</em></div>
-        <div class="evidence-card" data-branch="coherence"><div><b>Speech Continuity / Coherence</b><span class="branch-state">Unavailable</span></div><strong class="branch-value">—</strong><progress max="1" value="0"></progress><small class="branch-reason">No adjacent voiced pair</small></div>
-        <div class="evidence-card channel-card" data-branch="channel"><div><b>Channel Quality</b><span class="branch-state">Unavailable</span></div><strong class="branch-value">—</strong><progress max="1" value="0"></progress><small class="branch-reason">Reliability, not spoof evidence</small><em id="channel-detail">Bandwidth — · SNR — · Input —</em></div>
-      </div><div class="profile-strip"><span>In-call profile <b id="bootstrap">PENDING</b></span><span>Accepted windows <b id="entries">0</b></span><span>Language <b id="language-result">UNKNOWN</b></span><span>Reference route <b id="route">—</b></span></div>
+
+    <!-- Evidence branches ---------------------------------------------- -->
+    <article class="panel evidence-panel" aria-labelledby="evidence-heading">
+      <div class="panel-title">
+        <div>
+          <p class="label">LIVE EVIDENCE</p>
+          <h3 id="evidence-heading">Independent signal tracks</h3>
+        </div>
+        <span>Unavailable evidence is never shown as zero</span>
+      </div>
+
+      <div class="evidence-grid">
+        <div class="evidence-card" data-branch="artifact">
+          <div><b>Artifact / Spoof Evidence</b><span class="branch-state">Unavailable</span></div>
+          <strong class="branch-value">—</strong>
+          <progress max="1" value="0" aria-label="Artifact evidence score"></progress>
+          <small class="branch-reason">Waiting for evidence</small>
+        </div>
+
+        <div class="evidence-card" data-branch="session">
+          <div><b>Session Voice Consistency</b><span class="branch-state">Unavailable</span></div>
+          <strong class="branch-value">—</strong>
+          <progress max="1" value="0" aria-label="Session consistency score"></progress>
+          <small class="branch-reason">Temporary profile not established</small>
+          <em id="similarity">Similarity —</em>
+        </div>
+
+        <div class="evidence-card" data-branch="coherence">
+          <div><b>Speech Continuity / Coherence</b><span class="branch-state">Unavailable</span></div>
+          <strong class="branch-value">—</strong>
+          <progress max="1" value="0" aria-label="Speech continuity score"></progress>
+          <small class="branch-reason">No adjacent voiced pair</small>
+        </div>
+
+        <div class="evidence-card channel-card" data-branch="channel">
+          <div><b>Channel Quality</b><span class="branch-state">Unavailable</span></div>
+          <strong class="branch-value">—</strong>
+          <progress max="1" value="0" aria-label="Channel reliability"></progress>
+          <small class="branch-reason">Reliability, not spoof evidence</small>
+          <em id="channel-detail">Bandwidth — · SNR — · Input —</em>
+        </div>
+      </div>
+
+      <div class="profile-strip">
+        <span>In-call profile <b id="bootstrap">PENDING</b></span>
+        <span>Accepted windows <b id="entries">0</b></span>
+        <span>Language <b id="language-result">UNKNOWN</b></span>
+        <span>Reference route <b id="route">—</b></span>
+      </div>
     </article>
-    <article class="panel events-panel"><div class="panel-title"><div><p class="label">AUDIT TRAIL</p><h3>Call events</h3></div><button id="download" disabled>Export metadata JSON</button></div><div id="events" class="event-list"><p>00:00 · Ready for a new call</p></div></article>
-    <details class="panel engineering-panel"><summary>Engineering status and latency</summary><div class="health-grid"><span>Backend <b id="backend">Checking</b></span><span>WebSocket <b id="websocket-state">Disconnected</b></span><span>Queue <b id="queue">—</b></span><span>Dropped windows <b id="dropped">0</b></span><span>Current latency <b id="latency">—</b></span><span>p50 / p95 <b id="percentiles">—</b></span><span>Geometry <b id="geometry">—</b></span><span>Device <b id="device">—</b></span><span>Model <b id="model">—</b></span><span>Reference index <b id="index-state">—</b></span></div><div id="reasons" class="reason-list"><span>Waiting for evidence</span></div></details>
+
+    <!-- Audit trail ----------------------------------------------------- -->
+    <article class="panel events-panel" aria-labelledby="audit-heading">
+      <div class="panel-title">
+        <div>
+          <p class="label">AUDIT TRAIL</p>
+          <h3 id="audit-heading">Call events</h3>
+        </div>
+        <button id="download" type="button" disabled>Export metadata JSON</button>
+      </div>
+      <div id="events" class="event-list" role="log" aria-label="Call event log">
+        <p>00:00 · Ready for a new call</p>
+      </div>
+    </article>
+
+    <!-- Engineering ----------------------------------------------------- -->
+    <details class="panel engineering-panel">
+      <summary>Engineering status and latency</summary>
+      <div class="health-grid">
+        <span>Backend <b id="backend">Checking</b></span>
+        <span>WebSocket <b id="websocket-state">Disconnected</b></span>
+        <span>Queue <b id="queue">—</b></span>
+        <span>Dropped windows <b id="dropped">0</b></span>
+        <span>Current latency <b id="latency">—</b></span>
+        <span>p50 / p95 <b id="percentiles">—</b></span>
+        <span>Geometry <b id="geometry">—</b></span>
+        <span>Device <b id="device">—</b></span>
+        <span>Model <b id="model">—</b></span>
+        <span>Reference index <b id="index-state">—</b></span>
+      </div>
+      <div id="reasons" class="reason-list"><span>Waiting for evidence</span></div>
+    </details>
+
   </section>
 </main>
-<footer><span>STRIVE · SIH26104 · Team Null Pointer</span><span>Raw audio and voice embeddings are not persisted by default.</span><button id="auth-config">API access</button></footer><script src="/assets/app.js"></script>
-</body></html>
+
+<footer>
+  <span>STRIVE · SIH26104 · Team Null Pointer</span>
+  <span>Raw audio and voice embeddings are not persisted by default.</span>
+  <button id="auth-config" type="button">API access</button>
+</footer>
+<script src="/assets/app.js"></script>
+</body>
+</html>

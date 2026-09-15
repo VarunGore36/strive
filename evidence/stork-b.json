@@ -1,0 +1,160 @@
+{
+  "run_id": "1788866475-accelerated-2s-0.5s",
+  "git_commit": "f1f1dfae1784dd49a5dd1ef263d8ac7989f7fce0",
+  "hardware": {
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+    "machine": "x86_64",
+    "processor": "AMD Ryzen 9 7950X 16-Core Processor",
+    "python": "3.12.9",
+    "cpu_count": 32,
+    "device": "cpu",
+    "gpu": null
+  },
+  "mode": "demo",
+  "pacing_mode": "accelerated",
+  "dataset": "scenario:switch",
+  "codec": "none",
+  "window_s": 2.0,
+  "hop_s": 0.5,
+  "multi_rate": false,
+  "model_version": "dsp-surrogate-v1",
+  "pipeline_version": "dsp-surrogate-v1",
+  "schema_version": "1.1",
+  "demo_only": true,
+  "audio_seconds": 40.0,
+  "windows": 77,
+  "expected_windows": 77,
+  "latency_ms": {
+    "compute": {
+      "p50": 5.122,
+      "p95": 5.879,
+      "max": 6.203,
+      "mean": 5.206,
+      "count": 77
+    },
+    "queue": {
+      "p50": 0.02,
+      "p95": 5.78,
+      "max": 6.246,
+      "mean": 2.583,
+      "count": 77
+    },
+    "end_to_end": {
+      "p50": 6.214,
+      "p95": 11.139,
+      "max": 11.873,
+      "mean": 7.789,
+      "count": 77
+    }
+  },
+  "stage_ms": {
+    "vad": {
+      "p50": 0.021,
+      "p95": 0.035,
+      "max": 0.04,
+      "mean": 0.022,
+      "count": 77
+    },
+    "channel": {
+      "p50": 1.104,
+      "p95": 1.292,
+      "max": 1.555,
+      "mean": 1.121,
+      "count": 77
+    },
+    "artifact": {
+      "p50": 3.48,
+      "p95": 3.588,
+      "max": 4.18,
+      "mean": 3.499,
+      "count": 77
+    },
+    "session": {
+      "p50": 0.426,
+      "p95": 0.77,
+      "max": 1.362,
+      "mean": 0.464,
+      "count": 77
+    },
+    "fusion": {
+      "p50": 0.011,
+      "p95": 0.019,
+      "max": 0.033,
+      "mean": 0.012,
+      "count": 77
+    }
+  },
+  "realtime_factor": 99.79,
+  "wall_clock_realtime_factor": 98.936,
+  "pacing": {
+    "wall_clock_s": 0.4043,
+    "late_frames": 0,
+    "max_lateness_ms": 0.0,
+    "frames": 40
+  },
+  "budget_ms": 500.0,
+  "windows_over_budget": 0,
+  "branch_reuse_windows": 0,
+  "scheduler": {
+    "queue_delay_ms": 4.976,
+    "cadence_ms": {
+      "channel": 500,
+      "prosody": 500,
+      "artifact": 1000,
+      "session": 2000,
+      "identity": 3000,
+      "fusion": 500
+    },
+    "branches": {
+      "channel": {
+        "runs": 0,
+        "skips": 0,
+        "failures": 0,
+        "age_ms": null,
+        "stale": false,
+        "missing": true
+      },
+      "prosody": {
+        "runs": 0,
+        "skips": 0,
+        "failures": 0,
+        "age_ms": null,
+        "stale": false,
+        "missing": true
+      },
+      "artifact": {
+        "runs": 77,
+        "skips": 0,
+        "failures": 0,
+        "age_ms": 0.0,
+        "stale": false,
+        "missing": false
+      },
+      "session": {
+        "runs": 0,
+        "skips": 0,
+        "failures": 0,
+        "age_ms": null,
+        "stale": false,
+        "missing": true
+      },
+      "identity": {
+        "runs": 0,
+        "skips": 0,
+        "failures": 0,
+        "age_ms": null,
+        "stale": false,
+        "missing": true
+      },
+      "fusion": {
+        "runs": 0,
+        "skips": 0,
+        "failures": 0,
+        "age_ms": null,
+        "stale": false,
+        "missing": true
+      }
+    }
+  },
+  "measurement_note": "Wall-clock CPU measurement of the DSP surrogate on the hardware above. Excludes network transport and browser capture. Not a detection metric and not a production real-time claim."
+}

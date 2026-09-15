@@ -1,38 +1,38 @@
 {
-  "created_utc": "2026-09-14T13:26:49.008857+00:00",
+  "created_utc": "2026-09-14T20:16:18.782115+00:00",
   "scope": "Engineering fixtures only; not a detector accuracy evaluation",
-  "python": "3.12.14",
-  "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+  "python": "3.12.3",
+  "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.39",
   "scenarios": {
     "steady": {
       "windows": 39,
       "bootstrap": "trusted",
-      "last_risk": 4.9741428255480066e-05,
+      "last_risk": 4.97375826810855e-05,
       "profile_entries": 39,
       "first_warning_s": null,
       "first_alert_s": null,
-      "p50_ms": 10.059,
-      "p95_ms": 11.590300000000001
+      "p50_ms": 17.562,
+      "p95_ms": 22.919900000000005
     },
     "switch": {
       "windows": 39,
       "bootstrap": "trusted",
-      "last_risk": 0.8055478693688962,
+      "last_risk": 0.8055478662667013,
       "profile_entries": 17,
       "first_warning_s": 22.0,
       "first_alert_s": 36.0,
-      "p50_ms": 9.78,
-      "p95_ms": 10.3385
+      "p50_ms": 23.509,
+      "p95_ms": 36.0571
     },
     "suspicious_start": {
       "windows": 39,
       "bootstrap": "blocked",
-      "last_risk": 0.7289861080914787,
+      "last_risk": 0.728986107587122,
       "profile_entries": 0,
       "first_warning_s": 4.0,
       "first_alert_s": 8.0,
-      "p50_ms": 9.33,
-      "p95_ms": 10.395000000000001
+      "p50_ms": 21.285,
+      "p95_ms": 31.48060000000001
     },
     "silence": {
       "windows": 39,
@@ -41,8 +41,8 @@
       "profile_entries": 0,
       "first_warning_s": null,
       "first_alert_s": null,
-      "p50_ms": 0.515,
-      "p95_ms": 0.6188000000000001
+      "p50_ms": 1.017,
+      "p95_ms": 1.4180000000000004
     }
   },
   "neural_inference_tested": false,

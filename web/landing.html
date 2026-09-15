@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>STRIVE | Voice risk, resolved during the call</title>
+  <meta name="description" content="STRIVE turns live voice-cloning risk into an explainable hold-and-verify workflow for sensitive calls.">
+  <meta name="theme-color" content="#070809">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='9' fill='%230E1013'/%3E%3Cpath d='M17 26V8' stroke='%23E9B44C' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/assets/landing.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header" id="site-header">
+  <a class="brand" href="/" aria-label="STRIVE home">
+    <svg class="brand-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><rect x="1" y="1" width="38" height="38" rx="11" stroke="currentColor" stroke-opacity=".25"/><g stroke-linecap="round" stroke-width="2.4"><path d="M10 23v-6" stroke="#656b72"/><path d="M15 26V14" stroke="#9b9fa5"/><path d="M20 31V9" stroke="#e9b44c"/><path d="M25 26V14" stroke="#9b9fa5"/><path d="M30 23v-6" stroke="#656b72"/></g></svg>
+    <span><strong>STRIVE</strong><small>Voice integrity system</small></span>
+  </a>
+  <nav aria-label="Primary navigation"><a href="#system">How it works</a><a href="#response">Response</a><a href="#boundaries">Evidence</a></nav>
+  <a class="header-cta" href="/dashboard">Open dashboard <span aria-hidden="true">↗</span></a>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <p class="overline"><span></span> Real-time voice risk and prevention</p>
+      <h1 id="hero-title">Protect the action <em>while the call is still live.</em></h1>
+      <p class="hero-lede">STRIVE watches acoustic evidence develop, separates voice risk from business context, and holds sensitive requests for verification through a trusted channel.</p>
+      <div class="hero-actions"><a class="button primary" href="/dashboard">Enter live dashboard <span aria-hidden="true">→</span></a><a class="button secondary" href="#system">Explore the signal path</a></div>
+      <div class="trust-line" aria-label="Project boundaries"><span><i class="status-dot"></i> Local-first prototype</span><span>Audio transient by default</span><span>Evidence, not identity proof</span></div>
+    </div>
+    <div class="signal-stage" id="signal-stage" aria-label="Animated diagram of three evidence signals converging into a protected decision">
+      <canvas id="signal-canvas" aria-hidden="true"></canvas><div class="stage-grid" aria-hidden="true"></div>
+      <div class="stage-status"><span class="live-pill"><i></i> SIGNAL ACTIVE</span><span>16 kHz / 0.5 s hop</span></div>
+      <div class="signal-core"><small>DECISION STATE</small><strong>VERIFY</strong><span>Protected action held</span></div>
+      <div class="signal-label label-artifact"><i></i><span>Artifact evidence</span><b>62</b></div>
+      <div class="signal-label label-session"><i></i><span>Session consistency</span><b>48</b></div>
+      <div class="signal-label label-continuity"><i></i><span>Speech continuity</span><b>31</b></div>
+      <div class="stage-caption">A visual model of the pipeline, not a detector output.</div>
+    </div>
+  </section>
+
+  <div class="proof-rail" aria-label="System capabilities"><span>LIVE PCM</span><i></i><span>OVERLAPPING WINDOWS</span><i></i><span>THREE EVIDENCE TRACKS</span><i></i><span>EXPLICIT ABSTENTION</span><i></i><span>HOLD + VERIFY</span></div>
+
+  <section class="narrative" id="system" aria-labelledby="system-title">
+    <div class="section-intro"><p>One call, continuously reassessed</p><h2 id="system-title">From waveform to a safer decision.</h2><span>STRIVE does not wait for an uploaded recording or collapse every signal into one unexplained score. It processes the call as it happens and preserves the reason behind each state change.</span></div>
+    <div class="flow" role="list" aria-label="STRIVE processing flow">
+      <article role="listitem"><span class="flow-number">01</span><div><h3>Capture the live stream</h3><p>Microphone, upload, or a deterministic scenario enters the same 16 kHz mono processing contract.</p></div><svg viewBox="0 0 72 28" aria-hidden="true"><path d="M1 14h8l4-8 7 16 7-13 7 10 7-7 7 4h23"/></svg></article>
+      <article role="listitem"><span class="flow-number">02</span><div><h3>Build current evidence</h3><p>Overlapping windows measure artifacts, same-call consistency, continuity, and channel reliability.</p></div><svg viewBox="0 0 72 28" aria-hidden="true"><circle cx="21" cy="14" r="8"/><circle cx="36" cy="14" r="8"/><circle cx="51" cy="14" r="8"/></svg></article>
+      <article role="listitem"><span class="flow-number">03</span><div><h3>Separate risk correctly</h3><p>Authenticity stays distinct from transaction context. The policy layer alone combines them.</p></div><svg viewBox="0 0 72 28" aria-hidden="true"><path d="M4 7h24l10 7-10 7H4zM68 7H44l-10 7 10 7h24z"/></svg></article>
+      <article role="listitem"><span class="flow-number">04</span><div><h3>Protect the action</h3><p>Elevated or missing evidence can hold the request until callback, MFA, or supervisor review resolves it.</p></div><svg viewBox="0 0 72 28" aria-hidden="true"><rect x="21" y="11" width="30" height="15" rx="3"/><path d="M28 11V8a8 8 0 0116 0v3"/></svg></article>
+    </div>
+  </section>
+
+  <section class="evidence-section" aria-labelledby="evidence-title">
+    <div class="evidence-copy"><p>Evidence stays inspectable</p><h2 id="evidence-title">Three signals. One honest answer.</h2><span>If a branch is silent, stale, or unavailable, STRIVE says so. Missing evidence never becomes a reassuring zero.</span><a href="/dashboard">Inspect evidence in the dashboard <span aria-hidden="true">→</span></a></div>
+    <div class="evidence-stack">
+      <article class="artifact-track"><div><b>Artifact evidence</b><span>Reference retrieval</span></div><div class="meter"><i></i></div><strong>GLOBAL</strong></article>
+      <article class="session-track"><div><b>Session consistency</b><span>Temporary in-call profile</span></div><div class="meter"><i></i></div><strong>LOCAL</strong></article>
+      <article class="continuity-track"><div><b>Speech continuity</b><span>Adjacent segment seam</span></div><div class="meter"><i></i></div><strong>SUPPORT</strong></article>
+      <footer><span>Channel quality changes reliability</span><b>never the meaning of the evidence</b></footer>
+    </div>
+  </section>
+
+  <section class="risk-separation" aria-labelledby="risk-title">
+    <div class="risk-heading"><p>A deliberate boundary</p><h2 id="risk-title">A suspicious voice and a risky request are not the same fact.</h2></div>
+    <div class="risk-equation" role="img" aria-label="Authenticity and context risk combine only in policy to produce decision risk">
+      <div class="risk-source auth-source"><span>01</span><b>Authenticity risk</b><small>Acoustic evidence only</small></div><div class="merge-line" aria-hidden="true"></div>
+      <div class="risk-source context-source"><span>02</span><b>Context risk</b><small>Amount, urgency, beneficiary</small></div><div class="merge-line" aria-hidden="true"></div>
+      <div class="decision-output"><small>POLICY OUTPUT</small><strong>HOLD + VERIFY</strong><span>Conversation remains open</span></div>
+    </div>
+  </section>
+
+  <section class="response-section" id="response" aria-labelledby="response-title">
+    <div class="response-panel"><div class="response-copy"><p>Detection becomes prevention</p><h2 id="response-title">Keep talking. Pause the irreversible step.</h2><span>The operator can hold a high-value request without ending the conversation, then move verification away from the potentially compromised audio channel.</span></div>
+      <ol class="response-steps"><li class="active"><i></i><div><b>Monitor</b><span>Evidence updates during the call</span></div></li><li class="active"><i></i><div><b>Hold action</b><span>Risk or uncertainty latches the hold</span></div></li><li><i></i><div><b>Verify elsewhere</b><span>Callback, MFA, or supervisor review</span></div></li><li><i></i><div><b>Release or block</b><span>Outcome is recorded in the audit trail</span></div></li></ol>
+    </div>
+  </section>
+
+  <section class="boundaries" id="boundaries" aria-labelledby="boundary-title">
+    <div><p>Built to demonstrate the complete loop</p><h2 id="boundary-title">Strong software claims. Careful research claims.</h2></div>
+    <div class="boundary-columns"><article><span class="boundary-state proven">IMPLEMENTED</span><h3>What the prototype proves</h3><ul><li>Streaming capture and bounded backpressure</li><li>Explainable evidence and explicit abstention</li><li>Context-aware hold-and-verify workflow</li><li>Transient same-call profile and privacy-aware audit</li></ul></article><article><span class="boundary-state research">RESEARCH REQUIRED</span><h3>What still needs real data</h3><ul><li>Calibrated genuine-versus-clone accuracy</li><li>Indian-language and code-mixed robustness</li><li>Unseen-generator and telephony evaluation</li><li>Production integration, scale, and governance</li></ul></article></div>
+  </section>
+
+  <section class="final-cta" aria-labelledby="cta-title"><div class="cta-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div><p>See the complete call workflow</p><h2 id="cta-title">Open the STRIVE operations console.</h2></div><a class="button primary" href="/dashboard">Launch dashboard <span aria-hidden="true">→</span></a></section>
+</main>
+
+<footer class="site-footer"><div><strong>STRIVE</strong><span>Streaming Training-free Real-time Identity-Verification Engine</span></div><div><span>SIH26104</span><span>Team Null Pointer</span><a href="/dashboard">Dashboard</a></div></footer>
+<script src="/assets/landing.js"></script>
+</body>
+</html>

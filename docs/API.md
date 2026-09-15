@@ -68,6 +68,52 @@ Microphone/PCM message:
 Known gap: `{"type":"gap"}`. A gap clears the trusted profile, scheduler cache
 and continuity state; it does not mint a safe score.
 
+## Channel state (CH-07)
+
+Every risk event carries a `channel` object describing the **transport**, never the
+speaker. A degraded channel means the acoustic evidence deserves less trust; it is not
+itself evidence of a clone. Values that could not be measured are `null`, never `0`.
+
+```json
+"channel": {
+  "sample_rate": 16000,
+  "estimated_bandwidth_hz": 7600.0,
+  "snr_db": 18.2,
+  "clipping_ratio": 0.001,
+  "rms_dbfs": -21.4,
+  "discontinuity_score": 0.12,
+  "packet_loss_rate": null,
+  "jitter_ms": null,
+  "codec": null,
+  "quality": 0.84
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `estimated_bandwidth_hz` | Occupied-bandwidth estimate: 99% cumulative-power rolloff on the averaged 512-point STFT. Separates narrowband from wideband. Content-dependent; `null` below the silence floor. |
+| `snr_db` | Rough SNR **proxy**, clamped to [0, 60]. Minimum-statistics noise floor (10th percentile of each frequency bin across time) against total power. Monotonic in added noise but biased high; not a laboratory measurement. |
+| `clipping_ratio` | Fraction of samples at or beyond ±0.99. |
+| `rms_dbfs` | Window level; `null` on digital silence. |
+| `discontinuity_score` | Bounded [0,1] continuity signal across adjacent windows: max of energy, noise-floor, spectral-centroid and boundary-step jumps. The first window has no predecessor and scores `0`. |
+| `packet_loss_rate`, `jitter_ms`, `codec` | Transport metadata supplied by the caller; `null` when the transport does not report it. |
+| `quality` | Conservative **reliability** scalar in [0,1]. It is *not* a spoof probability. `null` when no usable audio was present. Individual features remain available regardless. |
+
+Every event also carries `capture` (AUD-04 queue counters), `scheduler` (SCH-03
+cadence telemetry) and `dropped_windows`. See `docs/LATENCY.md`.
+
+Backward compatibility: `channel` is additive. `schema_version` is now `"1.1"` because `latency_ms`
+changed from a float to `{compute, queue, end_to_end}`; every other addition is
+additive and clients that ignore unknown keys are unaffected. Per-stage timings are in `stage_ms`, which now
+includes `channel` alongside `features` and `tracks`.
+
+Window geometry is configurable (`window_s`, `stride_s`, both exposed by `/v1/config`).
+`stride_s` must satisfy `0 < stride_s <= window_s` and land on whole 16 kHz samples.
+2 s/1 s, 2 s/0.5 s and 4 s/0.5 s are covered by tests. Event rate follows the hop, so a
+0.5 s stride emits roughly two events per second after warm-up.
+
+Context thresholding can hold a sensitive action while acoustic risk remains unknown. The mock transaction endpoint also holds stale/uncertain evidence and latches prior alerts. Demo-mode transactions always require a mock verification. Verification applies only to the current received sequence; subsequent evidence or context changes can invalidate it.
+
 Uploaded file playback after `POST /upload`:
 
 ```json

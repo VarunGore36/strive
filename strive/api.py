@@ -192,6 +192,10 @@ def create_app(settings=None, extractor=None, index=None):
 
     @app.get("/")
     def homepage():
+        return FileResponse(WEB / "landing.html")
+
+    @app.get("/dashboard")
+    def dashboard():
         return FileResponse(WEB / "index.html")
 
     @app.get("/health")

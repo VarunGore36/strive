@@ -1,0 +1,11 @@
+{
+  "splits": {
+    "test": 300
+  },
+  "speaker_disjoint": true,
+  "labels": [
+    "0",
+    "1"
+  ],
+  "scope": "Corpus manifest, not proof of checkpoint-training exclusion. Common Voice is genuine-only."
+}
