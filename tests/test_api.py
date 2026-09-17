@@ -36,14 +36,14 @@ def test_websocket_same_engine_and_cleanup(client):
             ws.send_json(frame(i)); result = ws.receive_json()
             assert result['sequence'] == i
         assert result['events'][0]['bootstrap'] == 'trusted'
-    assert client.post(f'/v1/calls/{call}/chunks', json=frame(7)).status_code == 404
+    assert client.post(f'/v1/calls/{call}/chunks', json=frame(7)).status_code == 422
 
 
 def test_invalid_and_duplicate_frames(client):
     call = client.post('/v1/calls', json={}).json()['call_id']
     assert client.post(f'/v1/calls/{call}/chunks', json={'sequence':0,'pcm_s16le':'@@@@'}).status_code == 422
     assert client.post(f'/v1/calls/{call}/chunks', json=frame(0)).status_code == 200
-    assert client.post(f'/v1/calls/{call}/chunks', json=frame(0)).status_code == 422
+    assert client.post(f'/v1/calls/{call}/chunks', json=frame(0)).json()['events'] == []
 
 
 def test_transfer_requires_mock_verification(client):

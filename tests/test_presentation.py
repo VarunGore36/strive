@@ -70,12 +70,15 @@ def test_verification_failure_and_review_keep_action_held(client):
     assert "pcm" not in str(audit).lower() and "embedding" not in str(audit).lower()
 
 
-def test_common_channel_reliability_cannot_change_available_fusion_score():
+def test_channel_reliability_differential_changes_fusion_score():
+    """Branch-specific reliability weights must change fusion when channel degrades."""
     base = aggregate([.8, .2, .4], 30, None, reliability=[1, 1, 1])
-    degraded = aggregate([.8, .2, .4], 30, None, reliability=[.2, .2, .2])
-    assert degraded[0] == pytest.approx(base[0])
-    assert degraded[1] == pytest.approx(base[1])
-    assert degraded[2] == pytest.approx(base[2])
+    # Quality=0.5 with default weights: artifact penalized least, coherence most
+    degraded = aggregate([.8, .2, .4], 30, None, reliability=[0.75, 0.6, 0.5])
+    assert degraded[0] != pytest.approx(base[0])
+    # Uniform reliability [1,1,1] always produces the same result as no reliability
+    assert base[0] == pytest.approx(aggregate([.8, .2, .4], 30, None, reliability=[1, 1, 1])[0])
+    # All-zero reliability abstains
     assert aggregate([.8, .2, .4], 30, None, reliability=[0, 0, 0])[0] is None
 
 

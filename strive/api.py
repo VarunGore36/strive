@@ -529,8 +529,6 @@ def create_app(settings=None, extractor=None, index=None):
             if "call" in locals() and key in locks and (protocol != "pcm-v2" or owns_stream):
                 async with locks[key]:
                     call.close()
-                    sessions.pop(key, None)
-                    locks.pop(key, None)
 
     @app.get("/metrics", response_class=PlainTextResponse)
     def metrics():

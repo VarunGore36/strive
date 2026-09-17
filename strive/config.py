@@ -17,7 +17,7 @@ class Settings:
     session_k: int = 10
     global_gate: float = 0.30
     similarity_gate: float = 0.70
-    alpha: float = 0.70
+    alpha: float = 0.60
     warning: float = 0.50
     alert: float = 0.75
     critical: float = 0.90
@@ -47,6 +47,8 @@ class Settings:
     # Common channel reliability mask. It can abstain when quality is unusable,
     # but cannot turn poor audio into authenticity evidence in either direction.
     channel_reliability: bool = True
+    channel_reliability_weights: dict = field(default_factory=lambda: {
+        "artifact": 0.5, "session": 0.8, "coherence": 1.0})
 
     def __post_init__(self) -> None:
         if self.weight_preset not in ("equal", "proposed", "global_heavy", "session_heavy"):

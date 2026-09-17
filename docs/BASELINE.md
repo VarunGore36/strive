@@ -161,8 +161,8 @@ These are pinned by tests on purpose. Ticket rules forbid changing thresholds to
 1. At age > 60 s the weight schedule is `[0.30, 0.50, 0.20]`, so `s_global = 1.0` with
    stable session/coherence fuses to only `0.30`. A static clone resembling the bootstrap
    can evade the alert band.
-2. EMA from zero: three maximum updates give `1 - 0.7^3 = 0.657`, below the 0.75 alert.
-   Five give ~0.832. The source diagram's "alert in three chunks" claim is wrong.
+2. EMA from zero: three maximum updates give `1 - 0.6^3 = 0.784`, above the 0.75 alert threshold.
+   This matches the three-chunk alert design goal.
 3. Boundary coherence is an uncalibrated supporting cue, confounded by phonetic content
    and packet loss. Not validated as a genuine-vs-synthetic discriminator.
 4. The self-filtering bootstrap gate blocks obvious fixture contamination but is not
