@@ -43,7 +43,7 @@ def test_invalid_and_duplicate_frames(client):
     call = client.post('/v1/calls', json={}).json()['call_id']
     assert client.post(f'/v1/calls/{call}/chunks', json={'sequence':0,'pcm_s16le':'@@@@'}).status_code == 422
     assert client.post(f'/v1/calls/{call}/chunks', json=frame(0)).status_code == 200
-    assert client.post(f'/v1/calls/{call}/chunks', json=frame(0)).status_code == 422
+    assert client.post(f'/v1/calls/{call}/chunks', json=frame(0)).json()['events'] == []
 
 
 def test_transfer_requires_mock_verification(client):

@@ -59,7 +59,7 @@ def test_counters_are_exposed():
     assert stats["capacity"] == 2
     assert stats["windows_queued"] == 5
     assert stats["windows_dropped"] == 3
-    assert stats["overflow_events"] == 1
+    assert stats["overflow_batches"] == 1
     assert stats["max_depth"] == 2
     assert stats["current_depth"] == 2
 

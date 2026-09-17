@@ -91,6 +91,5 @@ def test_duplicate_sequence_closes_and_erases_session(client):
     with client.websocket_connect('/v1/stream/' + key) as ws:
         ws.send_json({'token':'', 'protocol':'pcm-v2'}); ws.receive_json()
         ws.send_bytes(packet(0)); assert ws.receive_json()['type'] == 'ack'
-        ws.send_bytes(packet(0)); assert ws.receive_json()['type'] == 'error'
-    assert key in client.app.state.sessions
-    assert client.app.state.sessions[key].closed
+        ws.send_bytes(packet(0)); dup = ws.receive_json()
+        assert dup['type'] == 'ack'

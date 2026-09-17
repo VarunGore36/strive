@@ -35,7 +35,7 @@ class CaptureStats:
     windows_scored: int = 0
     windows_dropped: int = 0
     frames_ingested: int = 0
-    overflow_events: int = 0
+    overflow_batches: int = 0
     max_depth: int = 0
     current_depth: int = 0
     capacity: int = 0
@@ -69,7 +69,7 @@ class BoundedWindowQueue:
                     dropped += 1
             if dropped:
                 self.stats.windows_dropped += dropped
-                self.stats.overflow_events += 1
+                self.stats.overflow_batches += 1
                 self.dropped_since_drain += dropped
             self.stats.current_depth = len(self.items)
             self.stats.max_depth = max(self.stats.max_depth, len(self.items))

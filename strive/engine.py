@@ -3,6 +3,8 @@ from concurrent.futures import ThreadPoolExecutor
 import time
 import uuid
 from typing import Any
+
+_SHARED_POOL = ThreadPoolExecutor(max_workers=8, thread_name_prefix="strive")
 import numpy as np
 from .audio import RATE, RingBuffer, SpeechGate
 from .features import unit
@@ -100,7 +102,7 @@ class Call:
         self.verification_method = None
         self.previous_active = False
         self.last_scored_end = None
-        self.pool = ThreadPoolExecutor(max_workers=3, thread_name_prefix="strive-track")
+        self.pool = _SHARED_POOL
 
     def ingest(self, samples: np.ndarray, sequence: int) -> int:
         """AUD-04 capture path: validate, buffer, enqueue. Never runs a model.
@@ -110,8 +112,9 @@ class Call:
         """
         if self.closed:
             raise ValueError("Call has ended")
-        if sequence != self.sequence:
-            # Reject duplicate/out-of-order frames rather than silently corrupting the stream.
+        if sequence < self.sequence:
+            return 0
+        if sequence > self.sequence + 1:
             raise ValueError(f"Expected sequence {self.sequence}, got {sequence}")
         if not 0 < len(samples) <= 2 * RATE:
             raise ValueError("Each frame must contain at most two seconds of 16 kHz PCM")
@@ -392,4 +395,3 @@ class Call:
         self.language_audio.clear()
         self.bootstrap_features.clear()
         self.bootstrap_scores.clear()
-        self.pool.shutdown(wait=True)
