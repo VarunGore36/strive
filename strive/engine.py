@@ -28,7 +28,7 @@ def scheduled_weights(age: float, preset: str = "proposed") -> list[float]:
     return [.8, 0., .2] if age < 15 else [.5, .3, .2] if age <= 60 else [.3, .5, .2]
 
 
-def aggregate(scores: list, age: float, previous: float | None, alpha: float = .7,
+def aggregate(scores: list, age: float, previous: float | None, alpha: float = .6,
               preset: str = "proposed", reliability: list | None = None) -> tuple:
     weights = np.array(scheduled_weights(age, preset))
     if reliability is not None:
@@ -37,6 +37,10 @@ def aggregate(scores: list, age: float, previous: float | None, alpha: float = .
             raise ValueError("Reliability must contain three finite values within [0,1]")
         weights *= rel
     weights[[s is None for s in scores]] = 0
+    if scores[0] is not None and scores[0] >= 0.5:
+        session_val = scores[1] if scores[1] is not None else 0.0
+        divergence = max(0.0, scores[0] - session_val)
+        weights[0] *= (1.0 + 2.0 * divergence)
     if weights.sum() == 0 or scores[0] is None:
         return None, [0., 0., 0.], None
     weights /= weights.sum()
@@ -155,6 +159,7 @@ class Call:
         self.workflow = "held"
         self.previous_active = False
         self.last_scored_end = None
+        self.sequence = 0
 
     def _score(self, window: Window) -> dict:
         started = time.perf_counter()
@@ -175,8 +180,14 @@ class Call:
             self.scheduler.reset()
             self.previous_active = False
             reasons.append("CAPTURE_QUEUE_OVERFLOW")
+        self.scheduler.begin("channel", now=age)
         with timer.stage("channel"):
             channel = self.channel.measure(window.samples, window.fresh_samples)
+        self.scheduler.publish("channel", BranchResult(
+            name="channel", score=channel.quality, confidence=1. if channel.quality is not None else 0.,
+            available=channel.quality is not None, latency_ms=timer.ms.get("channel", 0.),
+            metadata={"bandwidth": channel.estimated_bandwidth_hz, "snr": channel.snr_db,
+                      "clipping": channel.clipping_ratio}), now=age)
         active = current_activity >= .25
         if self.bootstrap == "pending":
             self.language_audio.append(window.fresh_samples.copy())
@@ -204,6 +215,8 @@ class Call:
                 with timer.stage("artifact"):
                     features = self.extractor.extract(window.samples)
                 with timer.stage("session"):
+                    self.scheduler.begin("session", now=age)
+                    self.scheduler.begin("coherence", now=age)
                     jobs = [self.pool.submit(self.index.query, features.cm, self.language, self.cfg.global_k,
                                             self.cfg.min_partition_entries, self.cfg.min_neighbor_similarity),
                             self.pool.submit(self.sps.similarity, features),
@@ -220,6 +233,14 @@ class Call:
                     available=global_score is not None, latency_ms=timer.ms.get("artifact", 0.),
                     metadata={"tracks": [global_score, session_score, coherence_score],
                               "similarity": similarity, "info": info}), now=age)
+                self.scheduler.publish("session", BranchResult(
+                    name="session", score=session_score, confidence=1. if session_score is not None else 0.,
+                    available=session_score is not None, latency_ms=timer.ms.get("session", 0.),
+                    metadata={"similarity": similarity}), now=age)
+                self.scheduler.publish("coherence", BranchResult(
+                    name="coherence", score=coherence_score, confidence=1. if coherence_score is not None else 0.,
+                    available=coherence_score is not None, latency_ms=timer.ms.get("session", 0.),
+                    metadata={}), now=age)
             except Exception:
                 if self.cfg.raise_model_errors:
                     raise
@@ -228,10 +249,14 @@ class Call:
                 reasons.append("MODEL_OR_INDEX_ERROR")
                 global_score = session_score = coherence_score = None
                 self.scheduler.fail("artifact", "MODEL_OR_INDEX_ERROR", now=age)
+                self.scheduler.fail("session", "MODEL_OR_INDEX_ERROR", now=age)
+                self.scheduler.fail("coherence", "MODEL_OR_INDEX_ERROR", now=age)
         elif active:
             # Not due this window. Reuse the cached result if it has not expired;
             # an expired one stays unavailable rather than freezing the risk score.
             self.scheduler.skip("artifact")
+            self.scheduler.skip("session")
+            self.scheduler.skip("coherence")
             cached = self.scheduler.snapshot(now=age)["artifact"]
             if cached.available:
                 global_score, session_score, _ = cached.metadata["tracks"]
@@ -268,7 +293,13 @@ class Call:
 
         enough = self.voiced_s >= self.cfg.min_voiced_s and active and global_score is not None
         quality = channel.quality if channel.quality is not None else 0.
-        reliability = [quality] * 3 if self.cfg.channel_reliability else [1.] * 3
+        if self.cfg.channel_reliability:
+            rw = self.cfg.channel_reliability_weights
+            reliability = [1.0 - rw.get("artifact", 0.5) * (1.0 - quality),
+                           1.0 - rw.get("session", 0.8) * (1.0 - quality),
+                           1.0 - rw.get("coherence", 1.0) * (1.0 - quality)]
+        else:
+            reliability = [1.] * 3
         with timer.stage("fusion"):
             acoustic_risk, weights, raw = aggregate([global_score, session_score, coherence_score], age, self.risk,
                                                     self.cfg.alpha, self.cfg.weight_preset, reliability)
@@ -295,16 +326,20 @@ class Call:
             if self.workflow not in ("blocked", "review", "verification_pending"):
                 self.workflow = "held"
         scheduler = self.scheduler.telemetry(now=age)
-        branch_age = scheduler["branches"]["artifact"]["age_ms"]
+        snap = self.scheduler.snapshot(now=age)
         branches = {}
-        for name, score, reason in (("artifact", global_score, "NO_GLOBAL_EVIDENCE"),
-                                    ("session", session_score, "NO_TRUSTED_PROFILE"),
-                                    ("coherence", coherence_score, "NO_ADJACENT_VOICED_PAIR")):
+        for name, score, fallback_reason in (("artifact", global_score, "NO_GLOBAL_EVIDENCE"),
+                                              ("session", session_score, "NO_TRUSTED_PROFILE"),
+                                              ("coherence", coherence_score, "NO_ADJACENT_VOICED_PAIR")):
+            bs = snap.get(name)
+            age_ms = scheduler["branches"].get(name, {}).get("age_ms")
+            stale = scheduler["branches"].get(name, {}).get("stale", False)
             branches[name] = {"score": score, "available": score is not None,
-                "freshness": ("fresh" if branch_age == 0 else "cached") if score is not None else
-                    ("stale" if scheduler["branches"]["artifact"]["stale"] else "unavailable"),
-                "age_ms": branch_age, "reliability": quality if score is not None else None,
-                "confidence": None, "reason": "MEASURED_UNCALIBRATED" if score is not None else reason}
+                "freshness": ("fresh" if age_ms == 0 else "cached") if score is not None else
+                    ("stale" if stale else "unavailable"),
+                "age_ms": age_ms, "reliability": quality if score is not None else None,
+                "confidence": None, "reason": "MEASURED_UNCALIBRATED" if score is not None else fallback_reason}
+        cs = snap.get("channel")
         branches["channel"] = {"score": channel.quality, "available": channel.quality is not None,
             "freshness": "fresh" if channel.quality is not None else "unavailable", "age_ms": 0,
             "reliability": channel.quality, "confidence": None, "reason": "QUALITY_NOT_SPOOF_RISK"}

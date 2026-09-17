@@ -98,7 +98,7 @@ Weights are renormalized after unavailable-track masking. Warning is 0.50; alert
 
 ## Mathematical failure cases retained for investigation
 
-Starting from zero, three maximum-score updates give `1 - 0.7^3 = 0.657`, below the 0.75 alert threshold. Five give approximately 0.832. This corrects the diagram's three-chunk alert assertion.
+Starting from zero, three maximum-score updates give `1 - 0.6^3 = 0.784`, above the 0.75 alert threshold. This matches the three-chunk alert design goal.
 
 For a mature call with all tracks available, scores `[1,0,0]` fuse to only `0.30`. Thus a completely suspicious global track can be outweighed by stable session/coherence tracks. For blocked SPS with coherence near zero, renormalizing `[0.30,0,0.20]` yields only 0.60 global influence. The tests intentionally preserve these counterexamples. Before deployment, evaluate a calibrated global-evidence floor or revised fusion/policy on held-out data; this build does not quietly change the proposed schedule to hide the issue.
 

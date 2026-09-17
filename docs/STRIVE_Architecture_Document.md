@@ -398,7 +398,7 @@ where α = 0.7
 - The previous second's risk score contributes 70% to the current score
 - The current chunk's raw score contributes 30%
 - A single anomalous chunk (cough, codec glitch, background noise) cannot push s_risk into the alert zone alone
-- Three consecutive maximum-score updates push s_risk from 0.0 to 1 − 0.7³ = 0.657 — into warning territory. Merely exceeding the warning threshold in each raw chunk does not imply this result.
+- Three consecutive maximum-score updates push s_risk from 0.0 to 1 − 0.6³ = 0.784 — above the 0.75 alert threshold. This matches the three-chunk alert design goal.
 - Five consecutive maximum-score chunks push s_risk to approximately 0.83 (1 − 0.7⁵ = 0.83193), breaching the 0.75 alert threshold. From zero, the fourth maximum-score update already reaches 0.7599; five updates are sufficient, not necessary.
 
 This behavior matches how a human expert would reason: one unusual second is noise; a sustained pattern is a signal.

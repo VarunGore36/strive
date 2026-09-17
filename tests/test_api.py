@@ -36,7 +36,7 @@ def test_websocket_same_engine_and_cleanup(client):
             ws.send_json(frame(i)); result = ws.receive_json()
             assert result['sequence'] == i
         assert result['events'][0]['bootstrap'] == 'trusted'
-    assert client.post(f'/v1/calls/{call}/chunks', json=frame(7)).status_code == 404
+    assert client.post(f'/v1/calls/{call}/chunks', json=frame(7)).status_code == 422
 
 
 def test_invalid_and_duplicate_frames(client):

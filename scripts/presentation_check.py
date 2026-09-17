@@ -19,7 +19,7 @@ def main() -> None:
     checks = []
     def check(name, condition, detail):
         checks.append({"name": name, "pass": bool(condition), "detail": str(detail)})
-    check("Python environment", sys.version_info[:2] == (3, 12), sys.version.split()[0])
+    check("Python environment", sys.version_info[:2] >= (3, 12), sys.version.split()[0])
     for package in ("fastapi", "numpy", "scipy", "soundfile", "faiss"):
         try:
             __import__(package); check("Package " + package, True, "available")
@@ -38,13 +38,20 @@ def main() -> None:
           f"16 kHz, {config.get('window_s')} s window, {config.get('stride_s')} s hop")
     check("Privacy settings", not any((ROOT / "data").rglob("*.wav")),
           "raw audio persistence disabled; audit uses allow-listed metadata")
-    sock = socket.socket()
     try:
-        sock.bind(("127.0.0.1", args.port)); check("Port availability", True, f"127.0.0.1:{args.port}")
-    except OSError as exc:
-        check("Port availability", False, str(exc))
-    finally:
+        sock = socket.socket()
+        sock.bind(("127.0.0.1", args.port))
         sock.close()
+        check("Port availability", True, f"127.0.0.1:{args.port} (free)")
+    except OSError:
+        try:
+            probe = socket.socket()
+            probe.settimeout(2)
+            probe.connect(("127.0.0.1", args.port))
+            probe.close()
+            check("Port availability", True, f"127.0.0.1:{args.port} (server already running)")
+        except (OSError, socket.timeout):
+            check("Port availability", False, f"127.0.0.1:{args.port} (in use by another process)")
     try:
         os.environ["STRIVE_CONFIG"] = str(ROOT / "config/presentation.json")
         from fastapi.testclient import TestClient

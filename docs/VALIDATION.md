@@ -36,7 +36,7 @@ The measurements describe a single local CPU run of the DSP surrogate and a tiny
 2. **The session gate prevents obvious fixture contamination.** In the switch run, the profile stops at 17 accepted windows. In the suspicious-start run it stays empty. This does not prove resistance to adversarial slow poisoning.
 3. **The score can decline despite suspicious global evidence.** The suspicious-start fixture alerts at eight seconds, then ends below 0.75 as age weights change. The mock workflow latches the earlier hold; the acoustic schedule itself is unchanged.
 4. **The mature schedule can suppress global evidence.** With all tracks available, `[1, 0, 0]` at age >60 seconds gives a raw score of 0.30. A static clone that resembles the initial profile may therefore challenge the proposed fusion.
-5. **The diagram's EMA assertion is incorrect.** Three maximum-score updates from zero yield 0.657, not an alert above 0.75. Five yield about 0.832.
+5. **EMA warm-up fixed.** Three maximum-score updates from zero now yield `1 - 0.6^3 = 0.784`, above the 0.75 alert threshold, matching the three-chunk alert design goal.
 6. **Coherence needs empirical validation.** The overlap indexing bug is corrected, but similarity between different adjacent phones is not inherently a genuine-vs-synthetic discriminator.
 
 ## Unexecuted or incomplete

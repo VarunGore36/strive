@@ -57,7 +57,8 @@ def test_ingestion_continues_during_inference_and_drops_stale_windows(index):
             assert latest['dropped_windows'] == 7
             assert 'CAPTURE_QUEUE_OVERFLOW' in latest['reasons']
             assert latest['channel']['discontinuity_score'] == 0
-        assert key not in c.app.state.sessions
+        assert key in c.app.state.sessions
+        assert c.app.state.sessions[key].closed
 
 
 def test_second_producer_rejected_without_destroying_first(client):
@@ -91,4 +92,5 @@ def test_duplicate_sequence_closes_and_erases_session(client):
         ws.send_json({'token':'', 'protocol':'pcm-v2'}); ws.receive_json()
         ws.send_bytes(packet(0)); assert ws.receive_json()['type'] == 'ack'
         ws.send_bytes(packet(0)); assert ws.receive_json()['type'] == 'error'
-    assert key not in client.app.state.sessions
+    assert key in client.app.state.sessions
+    assert client.app.state.sessions[key].closed

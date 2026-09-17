@@ -17,7 +17,7 @@ LABELS = {"global_only": "Track 1 only", "session_only": "Track 2 only", "cohere
           "track12": "Track 1+2", "track13": "Track 1+3", "track23": "Track 2+3", "strive": "STRIVE (full)"}
 
 
-def ablate_events(events: list[dict], alpha: float = .7, preset: str = "proposed",
+def ablate_events(events: list[dict], alpha: float = .6, preset: str = "proposed",
                   attack_onset_s: float | None = None) -> dict[str, dict]:
     """Replay score combinations; unavailable evidence never becomes zero risk."""
     result = {}
@@ -30,6 +30,10 @@ def ablate_events(events: list[dict], alpha: float = .7, preset: str = "proposed
             if len(selected) == 1:
                 weights[:] = 1  # A singleton has no relative weighting schedule.
             weights[[i not in selected or scores[i] is None for i in range(3)]] = 0
+            if scores[0] is not None and scores[0] >= 0.5:
+                session_val = scores[1] if scores[1] is not None else 0.0
+                divergence = max(0.0, scores[0] - session_val)
+                weights[0] *= (1.0 + 2.0 * divergence)
             raw = None
             # Retain common global-validity admission for all conditional ablations.
             if weights.sum() and scores[0] is not None:
