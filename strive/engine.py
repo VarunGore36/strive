@@ -191,7 +191,7 @@ class Call:
             available=channel.quality is not None, latency_ms=timer.ms.get("channel", 0.),
             metadata={"bandwidth": channel.estimated_bandwidth_hz, "snr": channel.snr_db,
                       "clipping": channel.clipping_ratio}), now=age)
-        active = current_activity >= .25
+        active = current_activity >= .10
         if self.bootstrap == "pending":
             self.language_audio.append(window.fresh_samples.copy())
         if not self.language_done and age >= self.cfg.bootstrap_s:

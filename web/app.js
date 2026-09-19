@@ -872,7 +872,6 @@ async function startMicrophone() {
         channelCount: 1,
         echoCancellation: false,
         noiseSuppression: false,
-        autoGainControl: false,
       },
     });
 
@@ -886,7 +885,7 @@ async function startMicrophone() {
     const source = audioCtx.createMediaStreamSource(media);
     node = new AudioWorkletNode(audioCtx, "strive-pcm");
     const mute = audioCtx.createGain();
-    mute.gain.value = 0;
+    mute.gain.value = 0.001;
     source.connect(node);
     node.connect(mute);
     mute.connect(audioCtx.destination);
