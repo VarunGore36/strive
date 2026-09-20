@@ -60,7 +60,7 @@ def activity(x):
     if not len(frames):
         return 0.0
     rms = np.sqrt(np.mean(frames * frames, axis=1))
-    return float(np.mean(rms > 0.008))
+    return float(np.mean(rms > 0.003))
 
 
 class SpeechGate:
