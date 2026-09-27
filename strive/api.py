@@ -4,9 +4,11 @@ from contextlib import asynccontextmanager
 from dataclasses import asdict
 import hmac
 import json
+import logging
 from pathlib import Path
 import time
 from typing import Literal
+import uuid
 import numpy as np
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
@@ -21,6 +23,8 @@ from .features import DSPExtractor
 from .retrieval import ReferenceIndex
 from .scheduler import MultiRateScheduler
 from .streaming import run_stream
+
+logger = logging.getLogger("strive")
 
 WEB = Path(__file__).resolve().parent.parent / "web"
 LANGUAGES = {"auto", "und", "hi", "ta", "te", "bn", "mr", "kn", "en", "mixed"}
@@ -128,6 +132,8 @@ def create_app(settings=None, extractor=None, index=None):
 
     @app.middleware("http")
     async def access(request: Request, call_next):
+        request_id = str(uuid.uuid4())[:12]
+        logger.info(f"request_id={request_id} method={request.method} path={request.url.path}")
         maximum = MAX_UPLOAD if request.url.path == "/v1/analyze" or request.url.path.endswith("/upload") else 90000
         try:
             if int(request.headers.get("content-length", "0")) > maximum:
@@ -142,6 +148,7 @@ def create_app(settings=None, extractor=None, index=None):
             if origin and origin != str(request.base_url).rstrip("/"):
                 return JSONResponse({"detail": "Cross-origin request rejected"}, status_code=403)
         response = await call_next(request)
+        response.headers["X-Request-ID"] = request_id
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "no-referrer"
         response.headers["Cache-Control"] = "no-store"
@@ -205,8 +212,17 @@ def create_app(settings=None, extractor=None, index=None):
 
     @app.get("/ready")
     def ready():
-        return {"ready": True, "mode": cfg.mode, "model_version": extractor.id,
-                "device": cfg.device, "model_ready": True, "reference_index_ready": True,
+        try:
+            test_input = np.zeros(round(cfg.window_s * cfg.sample_rate), dtype=np.float32)
+            extractor.extract(test_input)
+            inference_ok = True
+        except Exception:
+            inference_ok = False
+        model_ready = True
+        index_ready = len(index.x) > 0
+        return {"ready": model_ready and index_ready and inference_ok, "mode": cfg.mode,
+                "model_version": extractor.id, "device": cfg.device, "model_ready": model_ready,
+                "reference_index_ready": index_ready, "inference_ok": inference_ok,
                 "language_model_ready": bool(getattr(extractor, "lid", None)),
                 "deepfake_detection_validated": False, "reference_vectors": len(index.x),
                 "demo_notice": "Not a neural accuracy benchmark" if extractor.is_surrogate else None}
@@ -239,6 +255,7 @@ def create_app(settings=None, extractor=None, index=None):
     async def start(body: NewCall):
         c = new_call(body)
         app.state.audit.write(c.id, "call.started", {"status": "analyzing", "source": c.source})
+        logger.info(f"call_started call_id={c.id} source={c.source} language={c.language}")
         return {"call_id": c.id, "ws_path": f"/v1/stream/{c.id}", "sample_rate": RATE, "encoding": "s16le"}
 
     @app.post("/v1/calls/{key}/chunks")
@@ -346,6 +363,7 @@ def create_app(settings=None, extractor=None, index=None):
         status = {"verified": "verified_mock", "failed": "blocked_mock", "review": "supervisor_review_mock"}[outcome]
         event = {"status": status, "method": body.method, "outcome": outcome, "demo_only": True}
         app.state.audit.write(key, "verification." + outcome, event)
+        logger.info(f"verification call_id={key} outcome={outcome} method={body.method}")
         return event
 
     @app.post("/v1/calls/{key}/transaction")
@@ -363,6 +381,7 @@ def create_app(settings=None, extractor=None, index=None):
             event = {"status": status, "recommended_action": policy["recommended_action"],
                      "demo_only": cfg.mode == "demo"}
             app.state.audit.write(key, "transaction.attempt", event)
+            logger.info(f"transaction call_id={key} status={status} risk={risk}")
             return event
 
     @app.post("/v1/analyze")
@@ -447,6 +466,9 @@ def create_app(settings=None, extractor=None, index=None):
                 if len(message) > 88000:
                     raise ValueError("Frame exceeds size limit")
                 obj = json.loads(message)
+                if obj.get("type") == "ping":
+                    await ws.send_json({"type": "pong"})
+                    continue
                 if obj.get("type") == "playback":
                     command = Playback.model_validate(obj)
                     metadata = None
